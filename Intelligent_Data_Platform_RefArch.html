@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligent Data Platform – Enterprise Reference Architecture</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #dce3ea;
+    padding: 24px;
+    min-width: 860px;
+  }
+
+  /* ── Outer card: flex row with side-panel columns ─────────── */
+  .outer-card {
+    display: flex;
+    border: 2px solid #aab5c0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  /* ── Side panels (Security & Governance / Stardog) ─────────── */
+  .side-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2f6;
+    flex-shrink: 0;
+  }
+  /* Right panel — vertical label strip + graph platforms column */
+  .side-panel-right {
+    width: 170px;
+    min-width: 170px;
+    border-left: 1px solid #cdd5de;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+  }
+  .graph-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f5f8fc;
+    min-width: 0;
+  }
+  .graph-details-header {
+    background: #0f4c75;
+    color: #fff;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-align: center;
+    padding: 6px 4px;
+    text-transform: uppercase;
+  }
+  .graph-items {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .graph-item {
+    padding: 7px 8px;
+    border-bottom: 1px solid #dde3ea;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .graph-item:last-child { border-bottom: none; }
+  .graph-item-title {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #0f4c75;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .graph-item-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .graph-item-desc {
+    font-size: 7.5px;
+    color: #556;
+    line-height: 1.4;
+  }
+  .graph-label-strip {
+    width: 28px;
+    min-width: 28px;
+    background: #0f4c75;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-left: 1px solid #1a6496;
+  }
+  .graph-label-strip span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    color: #ffffff;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  /* Left panel — vertical label strip + details column */
+  .side-panel-left {
+    width: 185px;
+    min-width: 185px;
+    border-right: 1px solid #cdd5de;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+  }
+  .gov-label-strip {
+    width: 28px;
+    min-width: 28px;
+    background: #1a3a5c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-right: 1px solid #2c527a;
+  }
+  .gov-label-strip span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    color: #ffffff;
+    white-space: nowrap;
+    user-select: none;
+    transform: rotate(180deg);
+  }
+  .gov-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f5f8fc;
+    min-width: 0;
+  }
+  .gov-details-header {
+    background: #1a3a5c;
+    color: #fff;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-align: center;
+    padding: 6px 4px;
+    text-transform: uppercase;
+  }
+  .gov-items {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .gov-item {
+    padding: 7px 8px;
+    border-bottom: 1px solid #dde3ea;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .gov-item:last-child { border-bottom: none; }
+  .gov-item-title {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #1a3a5c;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .gov-item-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .gov-item-desc {
+    font-size: 7.5px;
+    color: #556;
+    line-height: 1.4;
+  }
+  .gov-group-label {
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #fff;
+    background: #2c3e50;
+    padding: 4px 8px;
+    margin-top: 2px;
+  }
+  .gov-group-label.green  { background: #1a6b3c; }
+  .gov-group-label.blue   { background: #154360; }
+  .gov-group-label.purple { background: #512e5f; }
+  .gov-group-label.orange { background: #784212; }
+
+  /* ── Main column ──────────────────────────────────────────── */
+  .main-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  /* ── Business Consumption Layer (top bar) ─────────────────── */
+  .biz-layer {
+    background: #eef2f6;
+    border-bottom: 1px solid #cdd5de;
+    padding: 11px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .biz-icons { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .biz-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a3a5c;
+    text-align: center;
+    flex: 1;
+  }
+
+  /* ── Layers stack ─────────────────────────────────────────── */
+  .layers { padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+
+  .layer-box {
+    border: 1px solid #cdd5de;
+    border-radius: 10px;
+    background: #fff;
+    padding: 13px 16px;
+  }
+
+  .layer-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a3a5c;
+    text-align: center;
+  }
+  .layer-sub {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    margin-top: 2px;
+    margin-bottom: 11px;
+    font-style: italic;
+  }
+
+  /* ── AI & Application cards ───────────────────────────────── */
+  .ai-cards { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
+  .ai-card {
+    flex: 1;
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    padding: 10px 8px 8px;
+    background: #f8fafc;
+    text-align: center;
+    min-width: 0;
+  }
+  .ai-card-icons { display: flex; gap: 5px; justify-content: center; margin-bottom: 6px; }
+  .ai-card-title { font-size: 12.5px; font-weight: 700; color: #1a3a5c; }
+  .ai-card-sub   { font-size: 10.5px; color: #999; margin-top: 2px; }
+
+  /* ── Connector arrow ──────────────────────────────────────── */
+  .connector {
+    text-align: center;
+    color: #0f6177;
+    font-size: 16px;
+    line-height: 1;
+    padding: 1px 0;
+  }
+
+  /* ── Knowledge graph ──────────────────────────────────────── */
+  .know-svg { width: 100%; display: block; }
+
+  /* ── Semantic layer items ─────────────────────────────────── */
+  .sem-items {
+    display: flex;
+    margin-top: 10px;
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .sem-item {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    color: #444;
+    padding: 9px 4px;
+    line-height: 1.4;
+    border-right: 1px solid #dde3ea;
+    background: #f8fafc;
+    min-width: 0;
+  }
+  .sem-item:last-child { border-right: none; }
+
+  /* ── Business Outcomes layer ─────────────────────────────── */
+  .outcomes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .outcome-card {
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .outcome-card-header {
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .outcome-items {
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: #fafcff;
+  }
+  .outcome-item {
+    font-size: 9.5px;
+    color: #334;
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    line-height: 1.35;
+  }
+  .outcome-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+  .domain-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .domain-pill {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid;
+  }
+
+  /* ── Orchestration & DataOps ──────────────────────────────── */
+  .dataops-grid { display: flex; gap: 8px; margin-top: 8px; }
+  .dataops-card {
+    flex: 1;
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    padding: 10px 9px;
+    background: #f8fafc;
+    text-align: center;
+  }
+  .dataops-card-name { font-size: 11px; font-weight: 700; color: #263238; }
+  .dataops-card-desc { font-size: 9px; color: #778; margin-top: 3px; line-height: 1.35; }
+  .dataops-pipeline {
+    margin-top: 8px;
+    background: #eceff1;
+    border: 1px solid #cfd8dc;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 9.5px;
+    color: #37474f;
+    text-align: center;
+  }
+
+  /* ── Vector Database ──────────────────────────────────────── */
+  .vecdb-row { display: flex; gap: 6px; margin-top: 10px; }
+  .vecdb-item {
+    flex: 1;
+    border: 1px solid #c5cae9;
+    border-radius: 8px;
+    padding: 8px 8px;
+    background: #e8eaf6;
+    text-align: center;
+  }
+  .vecdb-item-name { font-size: 10.5px; font-weight: 700; color: #283593; }
+  .vecdb-item-desc { font-size: 8.5px; color: #5c6bc0; margin-top: 2px; line-height: 1.3; }
+
+  /* ── Enterprise System Integrations ──────────────────────── */
+  .int-grid { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .int-card {
+    flex: 1;
+    min-width: 130px;
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .int-card-header {
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    padding: 5px 8px;
+    text-align: center;
+  }
+  .int-card-body {
+    padding: 7px 8px;
+    font-size: 8.5px;
+    color: #445;
+    line-height: 1.5;
+    background: #fafafa;
+  }
+  .int-protocol {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .int-badge {
+    font-size: 8.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: #e0e0e0;
+    color: #333;
+  }
+
+  /* ── Multi-Cloud & FinOps ─────────────────────────────────── */
+  .cloud-finops-row { display: flex; gap: 8px; margin-top: 14px; }
+  .cloud-box, .finops-box {
+    flex: 1;
+    border: 1px solid #dde3ea;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .cloud-box-header, .finops-box-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    padding: 6px 12px;
+  }
+  .cloud-box-header { background: #1565c0; }
+  .finops-box-header { background: #2e7d32; }
+  .cloud-box-body, .finops-box-body {
+    padding: 9px 11px;
+    font-size: 9.5px;
+    color: #334;
+    line-height: 1.6;
+    background: #fafafa;
+  }
+
+  /* ── Quantum Computing layer ─────────────────────────────── */
+  .quantum-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .quantum-card {
+    border: 1px solid #b39ddb;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .quantum-card-header {
+    padding: 7px 10px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg,#4a148c,#7b1fa2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .quantum-card-body {
+    padding: 8px 10px;
+    font-size: 9px;
+    color: #334;
+    line-height: 1.5;
+    background: #f3e5f5;
+  }
+  .quantum-tag {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: #e1bee7;
+    color: #4a148c;
+    margin: 2px 2px 0 0;
+  }
+  .quantum-providers {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .quantum-provider {
+    flex: 1;
+    min-width: 90px;
+    border: 1px solid #ce93d8;
+    border-radius: 8px;
+    padding: 7px 8px;
+    background: #fce4ec;
+    text-align: center;
+  }
+  .quantum-provider-name { font-size: 10px; font-weight: 700; color: #880e4f; }
+  .quantum-provider-desc { font-size: 8px; color: #888; margin-top: 2px; line-height: 1.3; }
+  .quantum-bridge {
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: linear-gradient(90deg,#4a148c11,#7b1fa211);
+    border: 1px dashed #9c27b0;
+    border-radius: 6px;
+    font-size: 9.5px;
+    color: #4a148c;
+    text-align: center;
+    font-weight: 600;
+  }
+  .gov-group-label.quantum { background: #4a148c; }
+
+  /* ── Big Tech Reference Patterns ─────────────────────────── */
+  .bigtech-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .bigtech-card {
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    padding: 10px 8px;
+    background: #f8fafc;
+  }
+  .bigtech-card-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 7px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e8edf2;
+  }
+  .bigtech-logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: white;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .bigtech-name { font-size: 11.5px; font-weight: 700; color: #1a3a5c; }
+  .bigtech-items { display: flex; flex-direction: column; gap: 4px; }
+  .bigtech-item {
+    font-size: 9.5px;
+    color: #445;
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    line-height: 1.35;
+  }
+  .bigtech-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+  .bigtech-tag {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 8px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  /* ── Digital Twin callout ─────────────────────────────────── */
+  .twin-callout {
+    margin-top: 10px;
+    border: 1.5px dashed #0f6177;
+    border-radius: 8px;
+    padding: 9px 13px;
+    background: #f0f9fc;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .twin-badge {
+    background: #0f6177;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .twin-desc { font-size: 10px; color: #334; line-height: 1.5; }
+
+  /* ── Data Mesh layer ──────────────────────────────────────── */
+  .mesh-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .mesh-principle {
+    font-size: 9.5px;
+    background: #ede7f6;
+    color: #4527a0;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .mesh-grid {
+    display: flex;
+    gap: 8px;
+  }
+  .mesh-domain {
+    flex: 1;
+    border: 1px solid #b39ddb;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mesh-domain-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+    background: #5e35b1;
+    padding: 5px 8px;
+    text-align: center;
+  }
+  .mesh-domain-body {
+    background: #f3e5f5;
+    padding: 7px 8px;
+    font-size: 9px;
+    color: #4527a0;
+    line-height: 1.5;
+  }
+  .mesh-domain-tag {
+    display: inline-block;
+    background: #d1c4e9;
+    color: #4527a0;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin: 2px 2px 0 0;
+  }
+  .mesh-pioneers {
+    margin-top: 8px;
+    font-size: 9px;
+    color: #777;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* ── Real-Time Streaming layer ────────────────────────────── */
+  .stream-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .stream-tool {
+    flex: 1;
+    border: 1px solid #ffe0b2;
+    border-radius: 8px;
+    padding: 9px 8px;
+    background: #fff8f0;
+    text-align: center;
+  }
+  .stream-tool-name { font-size: 11.5px; font-weight: 700; color: #bf360c; }
+  .stream-tool-desc { font-size: 9.5px; color: #888; margin-top: 3px; line-height: 1.35; }
+  .stream-flow {
+    margin-top: 8px;
+    font-size: 9.5px;
+    color: #666;
+    text-align: center;
+    background: #fff3e0;
+    border: 1px solid #ffe0b2;
+    border-radius: 6px;
+    padding: 5px 10px;
+  }
+
+  /* ── Data Contracts ───────────────────────────────────────── */
+  .contracts-wrapper {
+    margin-top: 14px;
+    border: 1px solid #cfd8dc;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .contracts-header {
+    background: #263238;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .contracts-header-sub {
+    font-size: 9.5px;
+    color: #b0bec5;
+    font-weight: 400;
+    font-style: italic;
+  }
+  .contracts-body { display: flex; background: #fff; }
+  .contract-item {
+    flex: 1;
+    padding: 11px 10px;
+    border-right: 1px solid #eceff1;
+    background: #fafafa;
+  }
+  .contract-item:last-child { border-right: none; }
+  .contract-item-title { font-size: 10.5px; font-weight: 700; color: #263238; margin-bottom: 4px; }
+  .contract-item-desc  { font-size: 9px; color: #607d8b; line-height: 1.4; }
+
+  /* ── Open Table Formats ───────────────────────────────────── */
+  .otf-wrapper {
+    margin-top: 14px;
+    border: 1px solid #c8e6c9;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .otf-header {
+    background: #1b5e20;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .otf-header-sub { font-size: 9.5px; color: #a5d6a7; font-weight: 400; font-style: italic; }
+  .otf-body { display: flex; background: #f9fbe7; }
+  .otf-item {
+    flex: 1;
+    padding: 12px 10px;
+    border-right: 1px solid #dcedc8;
+    text-align: center;
+  }
+  .otf-item:last-child { border-right: none; }
+  .otf-item-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .otf-item-desc { font-size: 9px; color: #555; line-height: 1.4; }
+  .otf-tag {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin: 2px 1px 0;
+  }
+
+  /* ── Virtualize bar ───────────────────────────────────────── */
+  .virt-bar {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a3a5c;
+    padding: 13px;
+    background: #f0f4f8;
+    border: 1px solid #cdd5de;
+    border-radius: 10px;
+  }
+
+  /* ── Enterprise logos ─────────────────────────────────────── */
+  .ent-logos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  /* ── Medallion Architecture ───────────────────────────────── */
+  .medallion-wrapper {
+    margin-top: 14px;
+    border: 1px solid #dde3ea;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .medallion-header {
+    background: #f0f4f8;
+    border-bottom: 1px solid #dde3ea;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .medallion-header-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1a3a5c;
+  }
+  .medallion-header-sub {
+    font-size: 10.5px;
+    color: #888;
+    font-style: italic;
+  }
+  .medallion-layers {
+    display: flex;
+    align-items: stretch;
+    background: #fff;
+  }
+  .med-layer {
+    flex: 1;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .med-layer-bronze   { background: #fdf6ef; border-right: 1px solid #e8d8c4; }
+  .med-layer-silver   { background: #f5f6f8; border-right: 1px solid #dde3ea; }
+  .med-layer-gold     { background: #fffbef; border-right: 1px solid #e8dfa0; }
+  .med-layer-platinum { background: #f0f4fb; }
+
+  .med-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .med-badge-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .bronze-dot   { background: radial-gradient(circle at 35% 35%, #f0a060, #8b4513); }
+  .silver-dot   { background: radial-gradient(circle at 35% 35%, #e8e8e8, #8a8a8a); }
+  .gold-dot     { background: radial-gradient(circle at 35% 35%, #ffe066, #b8860b); }
+  .platinum-dot { background: radial-gradient(circle at 35% 35%, #d4e4ff, #4a6fa5); }
+
+  .bronze-title   { color: #7a3b00; }
+  .silver-title   { color: #4a4a5a; }
+  .gold-title     { color: #7a6000; }
+  .platinum-title { color: #1a3a70; }
+
+  .med-desc {
+    font-size: 10.5px;
+    color: #555;
+    line-height: 1.5;
+  }
+  .med-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .med-tag {
+    font-size: 9.5px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .bronze-tag   { background: #f5e4d0; color: #7a3b00; }
+  .silver-tag   { background: #e4e6ed; color: #4a4a5a; }
+  .gold-tag     { background: #fef0c0; color: #7a6000; }
+  .platinum-tag { background: #dce8ff; color: #1a3a70; }
+
+  .med-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    flex-shrink: 0;
+    color: #0f6177;
+    font-size: 18px;
+    background: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="outer-card">
+
+  <!-- ══ Left side panel — Security & Governance ══ -->
+  <div class="side-panel side-panel-left">
+
+    <!-- Vertical label strip -->
+    <div class="gov-label-strip">
+      <span>Security &amp; Governance</span>
+    </div>
+
+    <!-- Details column -->
+    <div class="gov-details">
+      <div class="gov-details-header">Governance Pillars</div>
+      <div class="gov-items">
+
+        <!-- ─ Core Governance ─ -->
+        <div class="gov-group-label">Core Governance</div>
+
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#c0392b;"></div>Federated Governance</div>
+          <div class="gov-item-desc">Domain-driven policies with global standards.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#2980b9;"></div>Domain Ownership</div>
+          <div class="gov-item-desc">Domain teams own and account for their data.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#27ae60;"></div>Data Quality at Source</div>
+          <div class="gov-item-desc">Quality enforced at ingestion, not after.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#8e44ad;"></div>Data as a Product</div>
+          <div class="gov-item-desc">First-class product with SLAs &amp; a named owner.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#e67e22;"></div>Access Control</div>
+          <div class="gov-item-desc">Role-based, self-service with governed guardrails.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#16a085;"></div>Pipeline Integrity</div>
+          <div class="gov-item-desc">Decoupled pipelines reduce fragility.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#d35400;"></div>Data Trust &amp; Lineage</div>
+          <div class="gov-item-desc">End-to-end lineage &amp; full audit trails.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#2c3e50;"></div>Compliance &amp; Audit</div>
+          <div class="gov-item-desc">GDPR(General Data Protection Regulation, a strict data privacy law created by the European Union), CCPA(California Privacy Protection Agency), India DPDP( Digital Personal Data Protection Act, 2023 ), China PIPL( Personal Information Protection Law ) , retention &amp; classification enforced platform-wide.</div>
+        </div>
+
+        <!-- ─ AI & Model Governance ─ -->
+        <div class="gov-group-label purple">AI &amp; Model Governance</div>
+
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#6a1b9a;"></div>AI Governance</div>
+          <div class="gov-item-desc">EU AI Act: model cards, bias detection, fairness &amp; XAI. Mandatory for LLM deployments.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#ab47bc;"></div>MLOps Governance</div>
+          <div class="gov-item-desc">Model versioning, drift monitoring &amp; prompt auditing for LLM outputs.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#7b1fa2;"></div>Right to Explanation</div>
+          <div class="gov-item-desc">EU mandate: AI decisions must be explainable &amp; contestable (NIST AI RMF).</div>
+        </div>
+
+        <!-- ─ Privacy & Security ─ -->
+        <div class="gov-group-label blue">Privacy &amp; Security</div>
+
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#1565c0;"></div>Data Privacy Engineering</div>
+          <div class="gov-item-desc">GDPR / CCPA / India DPDP / China PIPL — PII masking, differential privacy, synthetic data.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#0288d1;"></div>Zero Trust Security</div>
+          <div class="gov-item-desc">Never trust, always verify. ABAC + just-in-time access. Adopted by Microsoft Azure &amp; Google BeyondCorp.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#01579b;"></div>Data Sovereignty</div>
+          <div class="gov-item-desc">Where data physically resides. Cross-border transfer controls &amp; national residency laws.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#006064;"></div>Data Clean Rooms</div>
+          <div class="gov-item-desc">Privacy-preserving joint analysis. AWS Clean Rooms, Google Ads Hub, Snowflake Clean Rooms.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#00838f;"></div>Consent Management</div>
+          <div class="gov-item-desc">Track &amp; honour user consent for data usage. Critical for supplier &amp; customer data.</div>
+        </div>
+
+        <!-- ─ Automation & Policy ─ -->
+        <div class="gov-group-label orange">Automation &amp; Policy</div>
+
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#e65100;"></div>Policy as Code</div>
+          <div class="gov-item-desc">Governance rules expressed as code, enforced automatically. OPA, AWS Cedar, Kyverno. Adopted by Netflix &amp; Airbnb.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#bf360c;"></div>Auto Data Classification</div>
+          <div class="gov-item-desc">AI-driven PII &amp; sensitive data tagging at ingestion. Microsoft Purview, Google DLP, AWS Macie.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#ff6f00;"></div>Active Metadata Mgmt</div>
+          <div class="gov-item-desc">Metadata that triggers automated actions — quarantine, notify owner, reclassify. Atlan, DataHub, Alation.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#f57f17;"></div>SLA Observability</div>
+          <div class="gov-item-desc">Automated monitoring of freshness, null rates &amp; integrity. Monte Carlo, Great Expectations, Soda.</div>
+        </div>
+
+        <!-- ─ Enterprise Data Management ─ -->
+        <div class="gov-group-label green">Enterprise Data Mgmt</div>
+
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#1b5e20;"></div>Master Data Mgmt (MDM)</div>
+          <div class="gov-item-desc">Single source of truth for core domain entities (e.g. Supplier, Customer, Product). Directly feeds the Enterprise Knowledge Graph.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#2e7d32;"></div>Semantic Governance</div>
+          <div class="gov-item-desc">Ontology management &amp; controlled vocabularies — ensures "Supplier" means the same thing across all domains.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#388e3c;"></div>Data Sharing Agreements</div>
+          <div class="gov-item-desc">Formal inter-domain usage rights contracts (ODRL standard). Defines who can use what and for how long.</div>
+        </div>
+
+        <!-- ─ Quantum Security ─ -->
+        <div class="gov-group-label quantum">⚛ Quantum Security</div>
+
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#4a148c;"></div>Post-Quantum Cryptography</div>
+          <div class="gov-item-desc">NIST PQC standards (2024): CRYSTALS-Kyber &amp; Dilithium. Migrate RSA/ECC before quantum computers break them.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#6a1b9a;"></div>Harvest Now, Decrypt Later</div>
+          <div class="gov-item-desc">Adversaries collect encrypted data today to decrypt with future quantum computers. PQC migration is urgent now.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#7b1fa2;"></div>Quantum Key Distribution</div>
+          <div class="gov-item-desc">QKD — physically unbreakable encryption using quantum mechanics. Zero-trust key exchange for highest-sensitivity data.</div>
+        </div>
+        <div class="gov-item">
+          <div class="gov-item-title"><div class="gov-item-dot" style="background:#8e24aa;"></div>Crypto-Agility</div>
+          <div class="gov-item-desc">Design systems to swap cryptographic algorithms without full re-architecture. Essential for long-lived data assets.</div>
+        </div>
+
+      </div><!-- /gov-items -->
+    </div><!-- /gov-details -->
+
+  </div>
+
+  <!-- ══ Main content column ══ -->
+  <div class="main-col">
+
+    <!-- Business Consumption Layer -->
+    <div class="biz-layer">
+      <div class="biz-icons">
+        <!-- OpenAI -->
+        <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#10a37f"/><text x="16" y="22" text-anchor="middle" fill="white" font-size="14" font-family="Arial">⊛</text></svg>
+        <!-- Anthropic -->
+        <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#cc785c"/><text x="16" y="21" text-anchor="middle" fill="white" font-size="15" font-family="Arial">✦</text></svg>
+        <!-- Gemini -->
+        <svg width="32" height="32" viewBox="0 0 32 32">
+          <defs><linearGradient id="gg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4285f4"/><stop offset="100%" stop-color="#34a853"/></linearGradient></defs>
+          <circle cx="16" cy="16" r="16" fill="url(#gg)"/>
+          <text x="16" y="21" text-anchor="middle" fill="white" font-size="13" font-family="Arial">✧</text>
+        </svg>
+      </div>
+
+      <div class="biz-title">Business Consumption Layer</div>
+
+      <div class="biz-icons">
+        <!-- Teams -->
+        <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#5059c9"/><text x="16" y="22" text-anchor="middle" fill="white" font-size="14" font-family="Arial" font-weight="bold">T</text></svg>
+        <!-- Slack -->
+        <svg width="32" height="32" viewBox="0 0 32 32">
+          <rect width="32" height="32" rx="6" fill="#fff"/>
+          <rect x="11" y="7"  width="4" height="9"  rx="2" fill="#ecb22e"/>
+          <rect x="17" y="16" width="4" height="9"  rx="2" fill="#2eb67d"/>
+          <rect x="7"  y="11" width="9" height="4"  rx="2" fill="#e01e5a"/>
+          <rect x="16" y="17" width="9" height="4"  rx="2" fill="#36c5f0"/>
+        </svg>
+        <!-- Power BI -->
+        <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#f2c811"/><rect x="9" y="17" width="4" height="8" rx="1" fill="#333"/><rect x="15" y="12" width="4" height="13" rx="1" fill="#333"/><rect x="21" y="8" width="4" height="17" rx="1" fill="#7a5800"/></svg>
+        <!-- ServiceNow -->
+        <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#62d84e"/><text x="16" y="21" text-anchor="middle" fill="white" font-size="11" font-family="Arial" font-weight="bold">SN</text></svg>
+        <!-- Salesforce -->
+        <svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="16" fill="#00a1e0"/><text x="16" y="21" text-anchor="middle" fill="white" font-size="10" font-family="Arial" font-weight="bold">SF</text></svg>
+      </div>
+    </div><!-- /biz-layer -->
+
+    <!-- Inner layers -->
+    <div class="layers">
+
+      <!-- Business Outcomes & Use Cases -->
+      <div class="layer-box">
+        <div class="layer-title">Business Outcomes &amp; Use Cases</div>
+        <div class="layer-sub">What this platform enables across any industry domain — outcomes delivered to the business</div>
+        <div class="outcomes-grid">
+
+          <div class="outcome-card">
+            <div class="outcome-card-header" style="background:#1565c0;">📊 Insight &amp; Analytics</div>
+            <div class="outcome-items">
+              <div class="outcome-item"><div class="outcome-dot" style="background:#1565c0;"></div>Self-service BI dashboards &amp; ad-hoc queries on governed data products</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#1565c0;"></div>Natural language querying via AI assistants (NLQ → SQL/SPARQL)</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#1565c0;"></div>Cross-domain reporting with consistent metrics &amp; definitions</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#1565c0;"></div>Real-time operational dashboards fed by streaming events</div>
+            </div>
+          </div>
+
+          <div class="outcome-card">
+            <div class="outcome-card-header" style="background:#6a1b9a;">🤖 AI &amp; Prediction</div>
+            <div class="outcome-items">
+              <div class="outcome-item"><div class="outcome-dot" style="background:#6a1b9a;"></div>Graph RAG — LLM answers grounded in the enterprise Knowledge Graph</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#6a1b9a;"></div>Predictive models: demand forecasting, risk scoring, anomaly detection</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#6a1b9a;"></div>Recommendation engines using graph relationships + embeddings</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#6a1b9a;"></div>Digital Twin simulations on graph-backed virtual replicas</div>
+            </div>
+          </div>
+
+          <div class="outcome-card">
+            <div class="outcome-card-header" style="background:#2e7d32;">⚡ Automation &amp; Action</div>
+            <div class="outcome-items">
+              <div class="outcome-item"><div class="outcome-dot" style="background:#2e7d32;"></div>Event-driven workflows triggered by real-time data changes</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#2e7d32;"></div>Automated alerts, escalations &amp; remediation actions</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#2e7d32;"></div>AI agent orchestration for multi-step decision automation</div>
+              <div class="outcome-item"><div class="outcome-dot" style="background:#2e7d32;"></div>Regulatory report auto-generation from governed lineage</div>
+            </div>
+          </div>
+
+        </div>
+        <!-- Quantum Outcomes row -->
+        <div style="margin-top:8px;border:1px solid #ce93d8;border-radius:8px;overflow:hidden;">
+          <div style="background:linear-gradient(135deg,#4a148c,#7b1fa2);color:#fff;font-size:11px;font-weight:700;padding:6px 12px;display:flex;align-items:center;justify-content:space-between;">
+            ⚛ Quantum-Enabled Outcomes
+            <span style="font-size:9px;font-weight:400;color:#e1bee7;font-style:italic;">Near-term (1–3 yrs): Optimization &amp; PQC · Mid-term (3–7 yrs): QML · Long-term (7+ yrs): Full Quantum Advantage</span>
+          </div>
+          <div style="display:flex;background:#f3e5f5;">
+            <div style="flex:1;padding:9px 10px;border-right:1px solid #d1c4e9;">
+              <div style="font-size:10px;font-weight:700;color:#4a148c;margin-bottom:3px;">⚡ Quantum Optimization</div>
+              <div style="font-size:8.5px;color:#555;line-height:1.4;">Route &amp; logistics optimization · Portfolio &amp; risk hedging · Production scheduling · Resource allocation across domains</div>
+            </div>
+            <div style="flex:1;padding:9px 10px;border-right:1px solid #d1c4e9;">
+              <div style="font-size:10px;font-weight:700;color:#4a148c;margin-bottom:3px;">🤖 Quantum ML Acceleration</div>
+              <div style="font-size:8.5px;color:#555;line-height:1.4;">Fraud detection · Drug-target interaction · Demand forecasting · Anomaly detection on high-dimensional datasets</div>
+            </div>
+            <div style="flex:1;padding:9px 10px;border-right:1px solid #d1c4e9;">
+              <div style="font-size:10px;font-weight:700;color:#4a148c;margin-bottom:3px;">🔬 Quantum Simulation</div>
+              <div style="font-size:8.5px;color:#555;line-height:1.4;">Molecular &amp; materials R&amp;D · Digital twin scenario simulation · Climate &amp; financial market modelling</div>
+            </div>
+            <div style="flex:1;padding:9px 10px;">
+              <div style="font-size:10px;font-weight:700;color:#4a148c;margin-bottom:3px;">🔐 Quantum-Safe Security</div>
+              <div style="font-size:8.5px;color:#555;line-height:1.4;">PQC-encrypted data products · QKD for highest-sensitivity assets · Crypto-agile governance frameworks</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Domain examples row -->
+        <div style="margin-top:10px;padding:8px 12px;background:#f0f4f8;border:1px solid #cdd5de;border-radius:8px;">
+          <div style="font-size:9.5px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;">Example domains this architecture serves</div>
+          <div class="domain-pills">
+            <span class="domain-pill" style="background:#e3f2fd;border-color:#90caf9;color:#1565c0;">🚚 Supply Chain</span>
+            <span class="domain-pill" style="background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32;">💊 Healthcare &amp; Life Sciences</span>
+            <span class="domain-pill" style="background:#fff8e1;border-color:#ffe082;color:#f57f17;">💰 Financial Services</span>
+            <span class="domain-pill" style="background:#fce4ec;border-color:#f48fb1;color:#c62828;">🛒 Retail &amp; E-Commerce</span>
+            <span class="domain-pill" style="background:#f3e5f5;border-color:#ce93d8;color:#6a1b9a;">🏭 Manufacturing</span>
+            <span class="domain-pill" style="background:#e0f2f1;border-color:#80cbc4;color:#00695c;">⚡ Energy &amp; Utilities</span>
+            <span class="domain-pill" style="background:#fff3e0;border-color:#ffcc80;color:#e65100;">🏛 Public Sector &amp; Government</span>
+            <span class="domain-pill" style="background:#ede7f6;border-color:#b39ddb;color:#4527a0;">📡 Telecom &amp; Media</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Big Tech Reference Patterns -->
+      <div class="layer-box">
+        <div class="layer-title">Industry Reference Patterns</div>
+        <div class="layer-sub">What Google, Amazon, Microsoft &amp; Meta are doing in their organisations</div>
+        <div class="bigtech-grid">
+
+          <!-- Google -->
+          <div class="bigtech-card">
+            <div class="bigtech-card-header">
+              <div class="bigtech-logo" style="background:linear-gradient(135deg,#4285f4,#34a853);">G</div>
+              <div class="bigtech-name">Google</div>
+            </div>
+            <div class="bigtech-items">
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#4285f4;"></div><span><b>Knowledge Graph</b> — entity/relationship graph powering Search at planet scale</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#34a853;"></div><span><b>Vertex AI + Gemini</b> — LLMs grounded in enterprise KGs via Graph RAG</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#fbbc05;"></div><span><b>Dataplex</b> — unified data governance, discovery &amp; quality across lakes</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#ea4335;"></div><span><b>BigQuery</b> — serverless lakehouse with built-in ML &amp; semantic search</span></div>
+            </div>
+          </div>
+
+          <!-- Amazon -->
+          <div class="bigtech-card">
+            <div class="bigtech-card-header">
+              <div class="bigtech-logo" style="background:#ff9900;">▲</div>
+              <div class="bigtech-name">Amazon / AWS</div>
+            </div>
+            <div class="bigtech-items">
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#ff9900;"></div><span><b>Amazon DataZone</b> — Data Mesh marketplace: publish, discover &amp; govern data products</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#e47911;"></div><span><b>Amazon Neptune</b> — graph DB for supply chain, fraud &amp; recommendations</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#1a73e8;"></div><span><b>AWS Bedrock</b> — foundation models connected to enterprise data via RAG</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#2ecc71;"></div><span><b>Lake Formation</b> — fine-grained access control on the data lake</span></div>
+            </div>
+          </div>
+
+          <!-- Microsoft -->
+          <div class="bigtech-card">
+            <div class="bigtech-card-header">
+              <div class="bigtech-logo" style="background:#0078d4;">M</div>
+              <div class="bigtech-name">Microsoft</div>
+            </div>
+            <div class="bigtech-items">
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#0078d4;"></div><span><b>Microsoft Fabric</b> — unified OneLake + Lakehouse + Real-time Analytics + Copilot</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#00b4d8;"></div><span><b>Microsoft Purview</b> — enterprise data catalog, lineage, classification &amp; policy</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#5c2d91;"></div><span><b>Microsoft Graph</b> — KG of enterprise identity, docs, emails &amp; meetings</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#107c10;"></div><span><b>Azure OpenAI + Copilot</b> — LLM agents grounded in enterprise context</span></div>
+            </div>
+          </div>
+
+          <!-- Meta -->
+          <div class="bigtech-card">
+            <div class="bigtech-card-header">
+              <div class="bigtech-logo" style="background:#0467df;">f</div>
+              <div class="bigtech-name">Meta</div>
+            </div>
+            <div class="bigtech-items">
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#0467df;"></div><span><b>Data Mesh Pioneer</b> — invented internal mesh model (Nemo, Lexicon)</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#e84393;"></div><span><b>PyTorch + LLaMA 3</b> — open-source ML &amp; domain-specific LLMs</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#00897b;"></div><span><b>Presto / Trino</b> — federated query engine across heterogeneous data</span></div>
+              <div class="bigtech-item"><div class="bigtech-dot" style="background:#f57c00;"></div><span><b>Velox</b> — unified execution engine reused across all pipelines</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- AI & Application Layer -->
+      <div class="layer-box">
+        <div class="layer-title">AI &amp; Application Layer</div>
+        <div class="layer-sub">Consuming connected, contextual meaning</div>
+        <div class="ai-cards">
+          <div class="ai-card">
+            <div class="ai-card-icons">
+              <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#10a37f"/><text x="10" y="14" text-anchor="middle" fill="white" font-size="10" font-family="Arial">⊛</text></svg>
+              <svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="4" fill="#0467df"/><text x="10" y="14" text-anchor="middle" fill="white" font-size="10" font-family="Arial" font-weight="bold">M</text></svg>
+            </div>
+            <div class="ai-card-title">Virtual Assistants</div>
+            <div class="ai-card-sub">Modeling | Querying | NLQ</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-icons">
+              <svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="4" fill="#e8eef8"/><text x="10" y="14" text-anchor="middle" fill="#3b68c4" font-size="8" font-family="Arial" font-weight="bold">A↔A</text></svg>
+            </div>
+            <div class="ai-card-title">Agent-to-Agent</div>
+            <div class="ai-card-sub">MCP | LangChain</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-icons">
+              <svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="4" fill="#fff3e0"/><text x="10" y="14" text-anchor="middle" fill="#e65100" font-size="12" font-family="Arial">⊞</text></svg>
+            </div>
+            <div class="ai-card-title">App Plug-ins</div>
+            <div class="ai-card-sub">Python | JS | Java</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-icons">
+              <svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="4" fill="#e8f5e9"/><text x="10" y="14" text-anchor="middle" fill="#2e7d32" font-size="8" font-family="Arial" font-weight="bold">API</text></svg>
+            </div>
+            <div class="ai-card-title">APIs</div>
+            <div class="ai-card-sub">REST | GraphQL | SQL</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-icons">
+              <svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="4" fill="#e8eaf6"/><text x="10" y="14" text-anchor="middle" fill="#3949ab" font-size="8" font-family="Arial" font-weight="bold">RAG</text></svg>
+            </div>
+            <div class="ai-card-title">Graph RAG</div>
+            <div class="ai-card-sub">KG-grounded LLM answers</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-icons">
+              <svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="4" fill="#fce4ec"/><text x="10" y="14" text-anchor="middle" fill="#c62828" font-size="7" font-family="Arial" font-weight="bold">MLOps</text></svg>
+            </div>
+            <div class="ai-card-title">MLOps / LLMOps</div>
+            <div class="ai-card-sub">Model registry | Monitoring</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Quantum-Enhanced Computing Layer -->
+      <div class="layer-box" style="border-color:#ce93d8;background:linear-gradient(180deg,#fdf6ff,#fff);">
+        <div class="layer-title" style="color:#4a148c;">⚛ Quantum-Enhanced Computing</div>
+        <div class="layer-sub">Hybrid classical–quantum workloads augmenting the platform — near-term practical &amp; future-ready capabilities</div>
+
+        <div class="quantum-grid">
+
+          <!-- Quantum ML -->
+          <div class="quantum-card">
+            <div class="quantum-card-header">🤖 Quantum Machine Learning (QML)</div>
+            <div class="quantum-card-body">
+              <b>Quantum Neural Networks (QNN)</b> — encode data into quantum states for complex pattern recognition with fewer parameters.<br><br>
+              <b>QSVM</b> — Quantum Support Vector Machines with quadratic speedup for high-dimensional classification.<br><br>
+              <b>Variational Quantum Algorithms (VQA)</b> — hybrid classical-quantum ML, executable on today's NISQ devices.<br><br>
+              <b>Frameworks:</b> IBM Qiskit ML · Google TensorFlow Quantum · PennyLane (Xanadu) · Amazon Braket SDK
+              <div style="margin-top:6px;">
+                <span class="quantum-tag">QNN</span>
+                <span class="quantum-tag">QSVM</span>
+                <span class="quantum-tag">VQA</span>
+                <span class="quantum-tag">NISQ-ready</span>
+                <span class="quantum-tag">Hybrid</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quantum Optimization -->
+          <div class="quantum-card">
+            <div class="quantum-card-header">⚡ Quantum Optimization (QAOA)</div>
+            <div class="quantum-card-body">
+              <b>QAOA</b> — Quantum Approximate Optimization Algorithm for combinatorial problems: routing, scheduling, resource allocation.<br><br>
+              <b>Quantum Annealing (D-Wave)</b> — best available today for large-scale optimization — logistics, portfolio, supply chain.<br><br>
+              <b>Real-world deployments:</b><br>
+              🚗 Volkswagen — traffic routing<br>
+              ✈ Airbus — aircraft loading<br>
+              💰 JPMorgan — portfolio optimization<br>
+              🚗 BMW — logistics scheduling
+              <div style="margin-top:6px;">
+                <span class="quantum-tag">QAOA</span>
+                <span class="quantum-tag">Annealing</span>
+                <span class="quantum-tag">Combinatorial</span>
+                <span class="quantum-tag">Near-term</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quantum Graph & Search -->
+          <div class="quantum-card">
+            <div class="quantum-card-header">🕸 Quantum Graph &amp; Search</div>
+            <div class="quantum-card-body">
+              <b>Grover's Algorithm</b> — quadratic speedup (O√N) for unstructured search — accelerates Knowledge Graph traversal &amp; semantic lookup.<br><br>
+              <b>Quantum Walk</b> — faster graph traversal, community detection &amp; link prediction on knowledge graphs.<br><br>
+              <b>Quantum-enhanced Embeddings</b> — represent graph structures in quantum Hilbert space for richer semantic similarity.<br><br>
+              <b>Connects to:</b> Knowledge Layer · Semantic Layer · Vector DB
+              <div style="margin-top:6px;">
+                <span class="quantum-tag">Grover's</span>
+                <span class="quantum-tag">Quantum Walk</span>
+                <span class="quantum-tag">Graph Speedup</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quantum Simulation -->
+          <div class="quantum-card">
+            <div class="quantum-card-header">🔬 Quantum Simulation</div>
+            <div class="quantum-card-body">
+              <b>Digital Twin Simulation</b> — quantum simulation of complex physical &amp; chemical systems beyond classical compute limits.<br><br>
+              <b>Molecular Simulation</b> — drug discovery, materials science, battery chemistry (pharma &amp; energy domains).<br><br>
+              <b>Financial Market Simulation</b> — Monte Carlo simulations with quantum speedup for risk modelling.<br><br>
+              <b>Used by:</b> Pfizer · BASF · Goldman Sachs · ExxonMobil
+              <div style="margin-top:6px;">
+                <span class="quantum-tag">Digital Twin</span>
+                <span class="quantum-tag">Molecular</span>
+                <span class="quantum-tag">Monte Carlo</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Post-Quantum Security -->
+          <div class="quantum-card">
+            <div class="quantum-card-header">🔐 Post-Quantum Cryptography (PQC)</div>
+            <div class="quantum-card-body">
+              <b>NIST PQC Standards (2024)</b> — CRYSTALS-Kyber (encryption), CRYSTALS-Dilithium &amp; SPHINCS+ (signatures).<br><br>
+              <b>"Harvest Now, Decrypt Later"</b> — adversaries collect encrypted data today; quantum computers will break RSA/ECC. Act now.<br><br>
+              <b>Quantum Key Distribution (QKD)</b> — physically unbreakable encryption using quantum mechanics.<br><br>
+              <b>Who's migrating:</b> Google · IBM · Microsoft · HSBC · JPMorgan all have active PQC programmes.
+              <div style="margin-top:6px;">
+                <span class="quantum-tag">CRYSTALS-Kyber</span>
+                <span class="quantum-tag">QKD</span>
+                <span class="quantum-tag">NIST 2024</span>
+                <span class="quantum-tag">Urgent</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quantum Sensing -->
+          <div class="quantum-card">
+            <div class="quantum-card-header">📡 Quantum Sensing &amp; Edge</div>
+            <div class="quantum-card-body">
+              <b>Quantum Sensors</b> — gravimeters, magnetometers &amp; atomic clocks providing ultra-precise measurements far beyond classical sensors.<br><br>
+              <b>Feeds Real-Time Streaming Layer</b> — quantum sensor data ingested via Kafka/Flink as a next-generation IoT data source.<br><br>
+              <b>Applications:</b> structural health monitoring · underground mapping · precision navigation · seismic detection · medical imaging.<br><br>
+              <b>Adopters:</b> Defence, Oil &amp; Gas, Aerospace, Healthcare imaging
+              <div style="margin-top:6px;">
+                <span class="quantum-tag">Ultra-precision</span>
+                <span class="quantum-tag">IoT Edge</span>
+                <span class="quantum-tag">Streaming</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Quantum Platform Providers -->
+        <div style="margin-top:10px;">
+          <div style="font-size:9px;font-weight:700;color:#4a148c;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Quantum Platform Providers</div>
+          <div class="quantum-providers">
+            <div class="quantum-provider"><div class="quantum-provider-name">IBM Quantum</div><div class="quantum-provider-desc">1000+ qubit systems · Qiskit · largest cloud quantum network</div></div>
+            <div class="quantum-provider"><div class="quantum-provider-name">Google Quantum AI</div><div class="quantum-provider-desc">Willow chip · error correction · quantum supremacy demonstrated</div></div>
+            <div class="quantum-provider"><div class="quantum-provider-name">Microsoft Azure Quantum</div><div class="quantum-provider-desc">Topological qubits · Q# language · hybrid classical-quantum</div></div>
+            <div class="quantum-provider"><div class="quantum-provider-name">Amazon Braket</div><div class="quantum-provider-desc">Managed access to multiple quantum hardware providers on AWS</div></div>
+            <div class="quantum-provider"><div class="quantum-provider-name">D-Wave Leap</div><div class="quantum-provider-desc">Quantum annealing — best available today for real-world optimization</div></div>
+            <div class="quantum-provider"><div class="quantum-provider-name">IonQ</div><div class="quantum-provider-desc">Trapped-ion · highest gate fidelity · cloud accessible via AWS/Azure/GCP</div></div>
+            <div class="quantum-provider"><div class="quantum-provider-name">Quantinuum</div><div class="quantum-provider-desc">Honeywell spin-off · H-Series · highest quality qubits commercially available</div></div>
+          </div>
+        </div>
+
+        <div class="quantum-bridge">
+          ⚛ Quantum ↔ Classical Hybrid: Quantum processors handle specific high-complexity subroutines (optimization, search, simulation) — classical infrastructure handles orchestration, data prep &amp; results consumption
+        </div>
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Knowledge Layer -->
+      <div class="layer-box">
+        <div class="layer-title">Knowledge Layer</div>
+        <div class="layer-sub">Data connected by context/meaning — adaptable to any domain (Supply Chain, Finance, Healthcare, Retail, Manufacturing…)</div>
+
+        <!--
+          viewBox 760 × 255  (all nodes kept well inside, labels have room)
+          Bill of Materials : 85,  82
+          Materials         : 230, 72
+          Tariffs-L         : 115, 178
+          Parts             : 240, 182
+          Product           : 370, 122
+          Supplier          : 370, 202
+          Country           : 505, 85
+          Tariffs-R         : 625, 95
+          Preferred         : 540, 195
+        -->
+        <svg class="know-svg" viewBox="0 0 760 255" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <defs>
+            <marker id="arr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+              <polygon points="0 0,7 2.5,0 5" fill="#0f6177"/>
+            </marker>
+          </defs>
+
+          <!-- Edges -->
+          <line x1="108" y1="75"  x2="207" y2="73"  stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="88"  y1="104" x2="108" y2="156" stroke="#0f6177" stroke-width="1.5"/>
+          <line x1="108" y1="87"  x2="345" y2="118" stroke="#0f6177" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+          <line x1="234" y1="94"  x2="236" y2="160" stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="251" y1="76"  x2="345" y2="114" stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="137" y1="177" x2="218" y2="181" stroke="#0f6177" stroke-width="1.5"/>
+          <line x1="262" y1="192" x2="347" y2="199" stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="370" y1="144" x2="370" y2="180" stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="392" y1="113" x2="482" y2="90"  stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="527" y1="85"  x2="602" y2="93"  stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="510" y1="107" x2="535" y2="173" stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="614" y1="117" x2="562" y2="177" stroke="#0f6177" stroke-width="1.5"/>
+          <line x1="392" y1="205" x2="518" y2="200" stroke="#0f6177" stroke-width="1.5" marker-end="url(#arr)"/>
+
+          <!-- Bill of Materials -->
+          <circle cx="85"  cy="82"  r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="85"  y="78"  text-anchor="middle" fill="#0f6177" font-size="13">📋</text>
+          <text x="85"  y="90"  text-anchor="middle" fill="#0f6177" font-size="7.5">BOM</text>
+          <text x="85"  y="113" text-anchor="middle" fill="#333" font-size="10">Bill of</text>
+          <text x="85"  y="125" text-anchor="middle" fill="#333" font-size="10">Materials</text>
+
+          <!-- Materials -->
+          <circle cx="230" cy="72"  r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="230" y="68"  text-anchor="middle" fill="#0f6177" font-size="14">⬡</text>
+          <text x="230" y="80"  text-anchor="middle" fill="#0f6177" font-size="7.5">MAT</text>
+          <text x="230" y="52"  text-anchor="middle" fill="#333" font-size="10">Materials</text>
+
+          <!-- Tariffs (left) -->
+          <circle cx="115" cy="178" r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="115" y="174" text-anchor="middle" fill="#0f6177" font-size="13">🏷</text>
+          <text x="115" y="186" text-anchor="middle" fill="#0f6177" font-size="7.5">TAR</text>
+          <text x="115" y="212" text-anchor="middle" fill="#333" font-size="10">Tariffs</text>
+
+          <!-- Parts -->
+          <circle cx="240" cy="182" r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="240" y="178" text-anchor="middle" fill="#0f6177" font-size="13">⚙</text>
+          <text x="240" y="190" text-anchor="middle" fill="#0f6177" font-size="7.5">PART</text>
+          <text x="240" y="216" text-anchor="middle" fill="#333" font-size="10">Parts</text>
+
+          <!-- Product -->
+          <circle cx="370" cy="122" r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="370" y="118" text-anchor="middle" fill="#0f6177" font-size="13">📦</text>
+          <text x="370" y="130" text-anchor="middle" fill="#0f6177" font-size="7.5">PROD</text>
+          <text x="370" y="102" text-anchor="middle" fill="#333" font-size="10">Product</text>
+
+          <!-- Supplier -->
+          <circle cx="370" cy="202" r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="370" y="198" text-anchor="middle" fill="#0f6177" font-size="13">🏭</text>
+          <text x="370" y="210" text-anchor="middle" fill="#0f6177" font-size="7.5">SUP</text>
+          <text x="370" y="236" text-anchor="middle" fill="#333" font-size="10">Supplier</text>
+
+          <!-- Country -->
+          <circle cx="505" cy="85"  r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="505" y="81"  text-anchor="middle" fill="#0f6177" font-size="13">📍</text>
+          <text x="505" y="93"  text-anchor="middle" fill="#0f6177" font-size="7.5">CTY</text>
+          <text x="505" y="65"  text-anchor="middle" fill="#333" font-size="10">Country</text>
+
+          <!-- Tariffs (right) -->
+          <circle cx="625" cy="95"  r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="625" y="91"  text-anchor="middle" fill="#0f6177" font-size="13">🏷</text>
+          <text x="625" y="103" text-anchor="middle" fill="#0f6177" font-size="7.5">TAR</text>
+          <text x="625" y="75"  text-anchor="middle" fill="#333" font-size="10">Tariffs</text>
+
+          <!-- Preferred -->
+          <circle cx="540" cy="195" r="22" fill="white" stroke="#0f6177" stroke-width="2"/>
+          <text x="540" y="191" text-anchor="middle" fill="#0f6177" font-size="13">⭐</text>
+          <text x="540" y="203" text-anchor="middle" fill="#0f6177" font-size="7.5">PREF</text>
+          <text x="540" y="229" text-anchor="middle" fill="#333" font-size="10">Preferred</text>
+
+        </svg>
+
+        <!-- Digital Twin callout -->
+        <div class="twin-callout">
+          <span class="twin-badge">Digital Twin</span>
+          <div class="twin-desc">
+            A graph-backed virtual replica of the supply chain — simulate the impact of tariff changes, supplier disruptions, or parts shortages across Product, BOM, Country &amp; Supplier nodes in real time, before changes reach production systems. Adopted by <b>Siemens, GE, Boeing, Amazon</b> and <b>BMW</b> for operational resilience.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Semantic Layer -->
+      <div class="layer-box">
+        <div class="layer-title">Semantic Layer</div>
+        <div class="layer-sub">Powered by the Enterprise Knowledge Graph</div>
+        <div class="sem-items">
+          <div class="sem-item">Query<br>Foundation</div>
+          <div class="sem-item">Knowledge<br>Catalog</div>
+          <div class="sem-item">Data<br>Quality</div>
+          <div class="sem-item">Modeling &amp;<br>Ontology</div>
+          <div class="sem-item">Business Logic &amp;<br>Reasoning</div>
+          <div class="sem-item">Semantic &amp; Vector<br>Embedding</div>
+          <div class="sem-item" style="background:#fff8e1;color:#e65100;">Data<br>Observability</div>
+        </div>
+        <!-- Vector Database row -->
+        <div style="margin-top:8px;">
+          <div style="font-size:9px;font-weight:700;color:#283593;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">Vector Database — Semantic Search &amp; RAG Storage</div>
+          <div class="vecdb-row">
+            <div class="vecdb-item"><div class="vecdb-item-name">Pinecone</div><div class="vecdb-item-desc">Managed vector DB — production-grade RAG &amp; semantic search</div></div>
+            <div class="vecdb-item"><div class="vecdb-item-name">Weaviate</div><div class="vecdb-item-desc">Open-source — hybrid vector + keyword search with graph links</div></div>
+            <div class="vecdb-item"><div class="vecdb-item-name">Chroma</div><div class="vecdb-item-desc">Lightweight, developer-friendly — local &amp; cloud embedding store</div></div>
+            <div class="vecdb-item"><div class="vecdb-item-name">pgvector</div><div class="vecdb-item-desc">Vector search inside PostgreSQL — low-ops for existing SQL teams</div></div>
+            <div class="vecdb-item"><div class="vecdb-item-name">Azure AI Search</div><div class="vecdb-item-desc">Microsoft's managed hybrid search — integrates with OpenAI &amp; Fabric</div></div>
+            <div class="vecdb-item"><div class="vecdb-item-name">Vertex AI Search</div><div class="vecdb-item-desc">Google's enterprise vector + semantic search on GCP</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Data Mesh Layer -->
+      <div class="layer-box">
+        <div class="layer-title">Data Mesh — Domain Data Products</div>
+        <div class="layer-sub">Pioneered by Meta (Nemo/Lexicon) · Adopted by Netflix, Zalando, Intuit, JPMorgan · Applicable to any domain-driven organisation</div>
+        <div class="mesh-header-row">
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <span class="mesh-principle">Domain Ownership</span>
+            <span class="mesh-principle">Data as a Product</span>
+            <span class="mesh-principle">Self-Service Infra</span>
+            <span class="mesh-principle">Federated Governance</span>
+          </div>
+        </div>
+        <div class="mesh-grid">
+          <div class="mesh-domain">
+            <div class="mesh-domain-title">Core Entities</div>
+            <div class="mesh-domain-body">
+              e.g. Products, Patients, Customers<br>
+              <span class="mesh-domain-tag">SLA</span>
+              <span class="mesh-domain-tag">Versioned</span>
+              <span class="mesh-domain-tag">Discoverable</span>
+            </div>
+          </div>
+          <div class="mesh-domain">
+            <div class="mesh-domain-title">Operational Data</div>
+            <div class="mesh-domain-body">
+              e.g. Orders, Transactions, Claims<br>
+              <span class="mesh-domain-tag">Contract</span>
+              <span class="mesh-domain-tag">Quality Score</span>
+              <span class="mesh-domain-tag">Audited</span>
+            </div>
+          </div>
+          <div class="mesh-domain">
+            <div class="mesh-domain-title">Reference &amp; Compliance</div>
+            <div class="mesh-domain-body">
+              e.g. Regulations, Codes, Tariffs<br>
+              <span class="mesh-domain-tag">Regulated</span>
+              <span class="mesh-domain-tag">Real-time</span>
+              <span class="mesh-domain-tag">Lineage</span>
+            </div>
+          </div>
+          <div class="mesh-domain">
+            <div class="mesh-domain-title">Market &amp; External</div>
+            <div class="mesh-domain-body">
+              e.g. Pricing, Geography, News<br>
+              <span class="mesh-domain-tag">Governed</span>
+              <span class="mesh-domain-tag">Certified</span>
+              <span class="mesh-domain-tag">Trusted</span>
+            </div>
+          </div>
+          <div class="mesh-domain">
+            <div class="mesh-domain-title">Analytics &amp; Insights</div>
+            <div class="mesh-domain-body">
+              e.g. KPIs, Scores, Forecasts<br>
+              <span class="mesh-domain-tag">SLA-governed</span>
+              <span class="mesh-domain-tag">BI-ready</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Product Marketplace -->
+        <div style="margin-top:10px;border:1px solid #b39ddb;border-radius:8px;overflow:hidden;">
+          <div style="background:#4527a0;color:#fff;font-size:11px;font-weight:700;padding:6px 12px;display:flex;align-items:center;justify-content:space-between;">
+            Data Product Marketplace
+            <span style="font-size:9px;font-weight:400;color:#ce93d8;font-style:italic;">Internal catalog — publish, discover, subscribe &amp; certify data products across all domains</span>
+          </div>
+          <div style="display:flex;background:#f3e5f5;">
+            <div style="flex:1;padding:9px 10px;border-right:1px solid #d1c4e9;text-align:center;">
+              <div style="font-size:10.5px;font-weight:700;color:#4527a0;">🔍 Discover</div>
+              <div style="font-size:9px;color:#666;margin-top:3px;">Search &amp; browse certified data products by domain, tag or owner</div>
+            </div>
+            <div style="flex:1;padding:9px 10px;border-right:1px solid #d1c4e9;text-align:center;">
+              <div style="font-size:10.5px;font-weight:700;color:#4527a0;">📋 Subscribe</div>
+              <div style="font-size:9px;color:#666;margin-top:3px;">Request access with auto-approval workflows based on governance policies</div>
+            </div>
+            <div style="flex:1;padding:9px 10px;border-right:1px solid #d1c4e9;text-align:center;">
+              <div style="font-size:10.5px;font-weight:700;color:#4527a0;">✅ Certify</div>
+              <div style="font-size:9px;color:#666;margin-top:3px;">Domain owners certify quality, SLA &amp; freshness — consumers see trust score</div>
+            </div>
+            <div style="flex:1;padding:9px 10px;text-align:center;">
+              <div style="font-size:10.5px;font-weight:700;color:#4527a0;">📊 Observe</div>
+              <div style="font-size:9px;color:#666;margin-top:3px;">Usage metrics, SLA health, lineage &amp; cost attribution per data product</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Virtualize | Cache | Materialize -->
+      <div class="virt-bar">Virtualize | Cache | Materialize</div>
+
+      <div class="connector">▼</div>
+
+      <!-- Real-Time Streaming Layer -->
+      <div class="layer-box">
+        <div class="layer-title">Real-Time Event Streaming</div>
+        <div class="layer-sub">Live feeds from any source system — IoT sensors, ERP events, CRM updates, market data, financial transactions, clickstreams</div>
+        <div class="stream-row">
+          <div class="stream-tool">
+            <div class="stream-tool-name">Apache Kafka</div>
+            <div class="stream-tool-desc">Distributed event streaming — high-throughput, fault-tolerant pub/sub. Used by LinkedIn, Uber, Netflix</div>
+          </div>
+          <div class="stream-tool">
+            <div class="stream-tool-name">Apache Flink</div>
+            <div class="stream-tool-desc">Stateful stream processing with exactly-once semantics. Used by Amazon, Alibaba, Apple</div>
+          </div>
+          <div class="stream-tool">
+            <div class="stream-tool-name">Spark Streaming</div>
+            <div class="stream-tool-desc">Micro-batch &amp; structured streaming on the Databricks/Azure Lakehouse stack</div>
+          </div>
+          <div class="stream-tool">
+            <div class="stream-tool-name">AWS Kinesis</div>
+            <div class="stream-tool-desc">Managed real-time data streaming fully integrated with the AWS ecosystem</div>
+          </div>
+          <div class="stream-tool">
+            <div class="stream-tool-name">Azure Event Hubs</div>
+            <div class="stream-tool-desc">Fully managed Kafka-compatible event ingestion on Microsoft Azure</div>
+          </div>
+          <div class="stream-tool">
+            <div class="stream-tool-name">Google Pub/Sub</div>
+            <div class="stream-tool-desc">Serverless global messaging for real-time event ingestion on GCP</div>
+          </div>
+        </div>
+        <div class="stream-flow">⚡ Events flow: Source Systems → Streaming Layer → Bronze (Raw) → Silver (Refined) → Knowledge Graph → AI Agents</div>
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Orchestration & DataOps -->
+      <div class="layer-box">
+        <div class="layer-title">Orchestration &amp; DataOps</div>
+        <div class="layer-sub">Pipeline scheduling, testing, CI/CD &amp; deployment automation — treating data pipelines as production software</div>
+        <div class="dataops-grid">
+          <div class="dataops-card">
+            <div class="dataops-card-name">Apache Airflow</div>
+            <div class="dataops-card-desc">Industry-standard DAG-based workflow orchestrator. Used by Airbnb, Twitter, NASA</div>
+          </div>
+          <div class="dataops-card">
+            <div class="dataops-card-name">Prefect</div>
+            <div class="dataops-card-desc">Modern Python-native orchestration with dynamic workflows &amp; observability built-in</div>
+          </div>
+          <div class="dataops-card">
+            <div class="dataops-card-name">Dagster</div>
+            <div class="dataops-card-desc">Asset-oriented orchestration — treats datasets as first-class software assets</div>
+          </div>
+          <div class="dataops-card">
+            <div class="dataops-card-name">dbt (data build tool)</div>
+            <div class="dataops-card-desc">SQL-based transformation with built-in testing, docs &amp; lineage. Industry standard for Silver/Gold layers</div>
+          </div>
+          <div class="dataops-card">
+            <div class="dataops-card-name">Azure Data Factory</div>
+            <div class="dataops-card-desc">Microsoft managed ETL/ELT pipelines — integrates with Fabric, Synapse &amp; 90+ connectors</div>
+          </div>
+          <div class="dataops-card">
+            <div class="dataops-card-name">Great Expectations</div>
+            <div class="dataops-card-desc">Data quality testing framework — define, run &amp; publish pipeline data contracts as executable tests</div>
+          </div>
+        </div>
+        <div class="dataops-pipeline">
+          🔄 DataOps Flow: Source → Ingest → Test (Data Contracts) → Transform (dbt) → Validate (GE/Soda) → Publish (Data Product) → Monitor (Observability)
+        </div>
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Enterprise Data & Catalogs -->
+      <div class="layer-box">
+        <div class="layer-title">Enterprise Data &amp; Catalogs</div>
+        <div class="ent-logos">
+          <!-- PDF -->
+          <svg width="32" height="28" viewBox="0 0 32 28"><rect width="32" height="28" rx="4" fill="#e53935"/><text x="16" y="18" text-anchor="middle" fill="white" font-size="10" font-family="Arial" font-weight="bold">PDF</text></svg>
+          <!-- Word -->
+          <svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="4" fill="#1565c0"/><text x="14" y="19" text-anchor="middle" fill="white" font-size="15" font-family="Arial" font-weight="bold">W</text></svg>
+          <!-- Databricks -->
+          <svg width="84" height="26" viewBox="0 0 84 26"><rect width="84" height="26" rx="4" fill="#ff3621"/><text x="42" y="17" text-anchor="middle" fill="white" font-size="10.5" font-family="Arial" font-weight="bold">databricks</text></svg>
+          <!-- Snowflake -->
+          <svg width="80" height="26" viewBox="0 0 80 26"><rect width="80" height="26" rx="4" fill="#29b5e8"/><text x="40" y="17" text-anchor="middle" fill="white" font-size="10.5" font-family="Arial" font-weight="bold">snowflake</text></svg>
+          <!-- Azure -->
+          <svg width="54" height="26" viewBox="0 0 54 26"><rect width="54" height="26" rx="4" fill="#0089d6"/><text x="27" y="17" text-anchor="middle" fill="white" font-size="10.5" font-family="Arial" font-weight="bold">Azure</text></svg>
+          <!-- AWS -->
+          <svg width="44" height="26" viewBox="0 0 44 26"><rect width="44" height="26" rx="4" fill="#ff9900"/><text x="22" y="17" text-anchor="middle" fill="#232f3e" font-size="11" font-family="Arial" font-weight="bold">aws</text></svg>
+          <!-- Collibra -->
+          <svg width="62" height="26" viewBox="0 0 62 26"><rect width="62" height="26" rx="4" fill="#0056b8"/><text x="31" y="17" text-anchor="middle" fill="white" font-size="10.5" font-family="Arial" font-weight="bold">Collibra</text></svg>
+          <!-- ServiceNow -->
+          <svg width="84" height="26" viewBox="0 0 84 26"><rect width="84" height="26" rx="4" fill="#62b086"/><text x="42" y="17" text-anchor="middle" fill="white" font-size="10.5" font-family="Arial" font-weight="bold">servicenow</text></svg>
+          <!-- Salesforce -->
+          <svg width="72" height="26" viewBox="0 0 72 26"><rect width="72" height="26" rx="13" fill="#00a1e0"/><text x="36" y="17" text-anchor="middle" fill="white" font-size="10.5" font-family="Arial" font-weight="bold">salesforce</text></svg>
+          <!-- SAP -->
+          <svg width="42" height="26" viewBox="0 0 42 26"><rect width="42" height="26" rx="4" fill="#008fd3"/><text x="21" y="17" text-anchor="middle" fill="white" font-size="11" font-family="Arial" font-weight="bold">SAP</text></svg>
+          <!-- IoMete -->
+          <svg width="62" height="26" viewBox="0 0 62 26"><rect width="62" height="26" rx="4" fill="#6c3fc5"/><text x="31" y="17" text-anchor="middle" fill="white" font-size="10.5" font-family="Arial" font-weight="bold">IoMete</text></svg>
+          <!-- SingleStore -->
+          <svg width="84" height="26" viewBox="0 0 84 26"><rect width="84" height="26" rx="4" fill="#aa00ff"/><text x="42" y="17" text-anchor="middle" fill="white" font-size="10.5" font-family="Arial" font-weight="bold">SingleStore</text></svg>
+        </div>
+
+        <!-- Open Table Formats -->
+        <div class="otf-wrapper">
+          <div class="otf-header">
+            Open Table Formats
+            <span class="otf-header-sub">Multi-engine lakehouse interoperability — enabling Databricks, Spark, Flink &amp; Trino to read the same tables</span>
+          </div>
+          <div class="otf-body">
+            <div class="otf-item">
+              <div class="otf-item-name" style="color:#e53935;">Apache Iceberg</div>
+              <div class="otf-item-desc">ACID transactions, schema evolution, time travel. Used by <b>Apple, Netflix, LinkedIn</b></div>
+              <div><span class="otf-tag" style="background:#fce4ec;color:#c62828;">ACID</span><span class="otf-tag" style="background:#fce4ec;color:#c62828;">Time Travel</span></div>
+            </div>
+            <div class="otf-item">
+              <div class="otf-item-name" style="color:#1565c0;">Delta Lake</div>
+              <div class="otf-item-desc">Databricks-native open format — ACID, DML, audit log. Used by <b>Microsoft, Comcast, H&amp;M</b></div>
+              <div><span class="otf-tag" style="background:#e3f2fd;color:#1565c0;">ACID</span><span class="otf-tag" style="background:#e3f2fd;color:#1565c0;">DML</span></div>
+            </div>
+            <div class="otf-item">
+              <div class="otf-item-name" style="color:#2e7d32;">Apache Hudi</div>
+              <div class="otf-item-desc">Upserts &amp; incremental processing optimised for CDC streams. Used by <b>Uber, Amazon, ByteDance</b></div>
+              <div><span class="otf-tag" style="background:#e8f5e9;color:#2e7d32;">CDC</span><span class="otf-tag" style="background:#e8f5e9;color:#2e7d32;">Upserts</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Contracts -->
+        <div class="contracts-wrapper">
+          <div class="contracts-header">
+            Data Contracts
+            <span class="contracts-header-sub">Formal schema &amp; SLA agreements between data producers and consumers — pioneered by Uber, LinkedIn &amp; Spotify</span>
+          </div>
+          <div class="contracts-body">
+            <div class="contract-item">
+              <div class="contract-item-title">Schema Contract</div>
+              <div class="contract-item-desc">Enforces field names, types &amp; required columns at the Bronze boundary. Prevents breaking changes reaching downstream.</div>
+            </div>
+            <div class="contract-item">
+              <div class="contract-item-title">SLA Contract</div>
+              <div class="contract-item-desc">Defines freshness, latency &amp; availability guarantees. Consumers know when data arrives and how stale it can be.</div>
+            </div>
+            <div class="contract-item">
+              <div class="contract-item-title">Quality Contract</div>
+              <div class="contract-item-desc">Null rates, referential integrity &amp; value distribution checks — producers are accountable for the data they publish.</div>
+            </div>
+            <div class="contract-item">
+              <div class="contract-item-title">Ownership Contract</div>
+              <div class="contract-item-desc">Named domain owner, team Slack channel, on-call runbook &amp; incident escalation path for every data product.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Medallion Architecture -->
+        <div class="medallion-wrapper">
+          <div class="medallion-header">
+            <div class="medallion-header-title">Medallion Architecture</div>
+            <div class="medallion-header-sub">Industry-standard data design pattern for Lakehouse systems — progressively refine data across three logical layers</div>
+          </div>
+          <div class="medallion-layers">
+
+            <!-- Bronze -->
+            <div class="med-layer med-layer-bronze">
+              <div class="med-badge">
+                <div class="med-badge-dot bronze-dot"></div>
+                <span class="bronze-title">Bronze — Raw Layer</span>
+              </div>
+              <div class="med-desc">
+                Data ingested as-is from source systems with no transformation. Acts as the system of record and enables full replay.
+              </div>
+              <div class="med-tags">
+                <span class="med-tag bronze-tag">Raw Ingestion</span>
+                <span class="med-tag bronze-tag">Full Fidelity</span>
+                <span class="med-tag bronze-tag">Append-Only</span>
+                <span class="med-tag bronze-tag">Schema-on-Read</span>
+                <span class="med-tag bronze-tag">Audit &amp; Replay</span>
+              </div>
+            </div>
+
+            <div class="med-arrow">▶</div>
+
+            <!-- Silver -->
+            <div class="med-layer med-layer-silver">
+              <div class="med-badge">
+                <div class="med-badge-dot silver-dot"></div>
+                <span class="silver-title">Silver — Refined Layer (Source Data Products)</span>
+              </div>
+              <div class="med-desc">
+                Validated, deduplicated, and conformed data. Applies business rules, type casting, and joins for a clean enterprise view.
+              </div>
+              <div class="med-tags">
+                <span class="med-tag silver-tag">Cleansed</span>
+                <span class="med-tag silver-tag">Deduplicated</span>
+                <span class="med-tag silver-tag">Conformed</span>
+                <span class="med-tag silver-tag">Business Rules</span>
+                <span class="med-tag silver-tag">Joined &amp; Enriched</span>
+              </div>
+            </div>
+
+            <div class="med-arrow">▶</div>
+
+            <!-- Gold -->
+            <div class="med-layer med-layer-gold">
+              <div class="med-badge">
+                <div class="med-badge-dot gold-dot"></div>
+                <span class="gold-title">Gold — Curated Layer</span>
+              </div>
+              <div class="med-desc">
+                Aggregated, domain-specific datasets optimised for analytics, BI, and ML. Delivered as data products to consumers.
+              </div>
+              <div class="med-tags">
+                <span class="med-tag gold-tag">Aggregated</span>
+                <span class="med-tag gold-tag">BI-Ready</span>
+                <span class="med-tag gold-tag">ML Features</span>
+                <span class="med-tag gold-tag">Data Products</span>
+                <span class="med-tag gold-tag">SLA-Governed</span>
+              </div>
+            </div>
+
+            <div class="med-arrow">▶</div>
+
+            <!-- Platinum -->
+            <div class="med-layer med-layer-platinum">
+              <div class="med-badge">
+                <div class="med-badge-dot platinum-dot"></div>
+                <span class="platinum-title">Platinum — DDL Layer</span>
+              </div>
+              <div class="med-desc">
+                Derived Data Products built on top of curated Gold outputs. Cross-domain, heavily aggregated datasets packaged as reusable, governed data products for enterprise-wide consumption.
+              </div>
+              <div class="med-tags">
+                <span class="med-tag platinum-tag">Derived Data Products</span>
+                <span class="med-tag platinum-tag">Cross-Domain</span>
+                <span class="med-tag platinum-tag">Reusable</span>
+                <span class="med-tag platinum-tag">Governed</span>
+                <span class="med-tag platinum-tag">Enterprise-Wide</span>
+              </div>
+            </div>
+
+          </div><!-- /medallion-layers -->
+        </div><!-- /medallion-wrapper -->
+
+      </div>
+
+      <!-- Enterprise System Integrations -->
+      <div class="layer-box">
+        <div class="layer-title">Enterprise System Integrations</div>
+        <div class="layer-sub">Source systems that feed the platform — applicable across any industry with domain-appropriate systems</div>
+        <div class="int-grid">
+          <div class="int-card">
+            <div class="int-card-header" style="background:#1b5e20;">ERP Systems</div>
+            <div class="int-card-body">SAP S/4HANA, Oracle ERP, Microsoft Dynamics 365<br><br>Core transactional backbone — orders, finance, HR, procurement</div>
+          </div>
+          <div class="int-card">
+            <div class="int-card-header" style="background:#0d47a1;">CRM &amp; Sales</div>
+            <div class="int-card-body">Salesforce, MS Dynamics CRM, HubSpot<br><br>Customer relationships, pipeline, interactions &amp; segmentation</div>
+          </div>
+          <div class="int-card">
+            <div class="int-card-header" style="background:#4a148c;">Domain Systems</div>
+            <div class="int-card-body">PLM, WMS, TMS, MES, SCADA, EMR/EHR, POS<br><br>Industry-specific operational systems — plug in what your domain uses</div>
+          </div>
+          <div class="int-card">
+            <div class="int-card-header" style="background:#bf360c;">External Data</div>
+            <div class="int-card-body">Market data, regulatory feeds, third-party APIs, IoT sensors, social signals, weather</div>
+          </div>
+          <div class="int-card">
+            <div class="int-card-header" style="background:#37474f;">SaaS &amp; Collaboration</div>
+            <div class="int-card-body">ServiceNow, Workday, Jira, Confluence, SharePoint<br><br>Enterprise productivity &amp; workflow platforms</div>
+          </div>
+        </div>
+        <div class="int-protocol">
+          <span class="int-badge" style="background:#e3f2fd;color:#1565c0;">REST / GraphQL</span>
+          <span class="int-badge" style="background:#e8f5e9;color:#2e7d32;">Kafka Connectors</span>
+          <span class="int-badge" style="background:#fff8e1;color:#f57f17;">CDC (Debezium)</span>
+          <span class="int-badge" style="background:#fce4ec;color:#c62828;">SOAP / EDI</span>
+          <span class="int-badge" style="background:#f3e5f5;color:#6a1b9a;">JDBC / ODBC</span>
+          <span class="int-badge" style="background:#e0f2f1;color:#00695c;">SFTP / File</span>
+          <span class="int-badge" style="background:#ede7f6;color:#4527a0;">Webhooks</span>
+          <span class="int-badge" style="background:#eceff1;color:#37474f;">gRPC</span>
+        </div>
+      </div>
+
+      <div class="connector">▼</div>
+
+      <!-- Multi-Cloud / Hybrid & FinOps -->
+      <div class="cloud-finops-row">
+        <div class="cloud-box">
+          <div class="cloud-box-header">☁ Multi-Cloud &amp; Hybrid Deployment</div>
+          <div class="cloud-box-body">
+            <b>AWS</b> — S3, Glue, Athena, Neptune, Bedrock, Redshift, DataZone<br>
+            <b>Microsoft Azure</b> — ADLS, Fabric, Synapse, Purview, OpenAI, Cosmos DB<br>
+            <b>Google Cloud</b> — BigQuery, Dataplex, Vertex AI, Pub/Sub, AlloyDB<br>
+            <b>On-Premise</b> — Hadoop, Cloudera, legacy data warehouses, mainframes<br>
+            <b>Iomete</b> — Kubernetes-native lakehouse (Apache Spark + Iceberg); BYOC model — deploys on any cloud or on-premise; data never leaves your environment; open-standards alternative to proprietary managed lakehouses<br><br>
+            <span style="color:#777;font-style:italic;">Platform designed to span multiple clouds or hybrid environments using open standards (Iceberg, Delta Lake, Hudi) so no single vendor lock-in. Iomete exemplifies this principle — fully portable, no vendor dependency.</span>
+          </div>
+        </div>
+        <div class="finops-box">
+          <div class="finops-box-header">💰 FinOps &amp; Cost Governance</div>
+          <div class="finops-box-body">
+            <b>Cost Attribution</b> — per domain team, data product &amp; pipeline<br>
+            <b>Query Cost Monitoring</b> — BigQuery / Snowflake slot usage &amp; spend alerts<br>
+            <b>Storage Tiering</b> — hot / warm / cold / archive tiers per data lifecycle stage<br>
+            <b>Compute Optimisation</b> — spot instances, auto-scaling, idle resource reclaim<br>
+            <b>Budget Alerts</b> — domain-level cloud spend caps with automated notifications<br>
+            <b>Iomete Native FinOps</b> — built-in workload isolation &amp; per-team / per-project cost attribution; domain teams own and see their compute spend without external tooling<br><br>
+            <span style="color:#777;font-style:italic;">FinOps tools: CloudHealth, Apptio Cloudability, AWS Cost Explorer, Azure Cost Management, Iomete (native cost attribution)</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /layers -->
+  </div><!-- /main-col -->
+
+  <!-- ══ Right side panel — Graph Platforms ══ -->
+  <div class="side-panel side-panel-right">
+
+    <!-- Details column -->
+    <div class="graph-details">
+      <div class="graph-details-header">Industry Graph Platforms</div>
+      <div class="graph-items">
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#0f4c75;"></div>
+            Stardog
+          </div>
+          <div class="graph-item-desc">Enterprise Knowledge Graph — SPARQL, GraphQL & virtual graphs.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#008cc1;"></div>
+            Neo4j
+          </div>
+          <div class="graph-item-desc">World's leading native graph DB — Cypher query language.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#ff9900;"></div>
+            Amazon Neptune
+          </div>
+          <div class="graph-item-desc">AWS managed graph — supports RDF/SPARQL &amp; Gremlin/TinkerPop.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#0078d4;"></div>
+            Azure Cosmos DB
+          </div>
+          <div class="graph-item-desc">Multi-model graph with Gremlin API on Microsoft Azure.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#e84e1b;"></div>
+            TigerGraph
+          </div>
+          <div class="graph-item-desc">Massively parallel graph analytics for real-time AI workloads.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#4caf50;"></div>
+            Ontotext GraphDB
+          </div>
+          <div class="graph-item-desc">Leading RDF triplestore — OWL reasoning &amp; SPARQL.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#7e57c2;"></div>
+            AnzoGraph DB
+          </div>
+          <div class="graph-item-desc">OLAP-style graph analytics — W3C standards, BI integration.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#e53935;"></div>
+            ArangoDB
+          </div>
+          <div class="graph-item-desc">Multi-model DB — documents, graphs &amp; key-value in one engine.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#00897b;"></div>
+            JanusGraph
+          </div>
+          <div class="graph-item-desc">Open-source distributed graph — scales across Cassandra &amp; HBase.</div>
+        </div>
+
+        <div class="graph-item">
+          <div class="graph-item-title">
+            <div class="graph-item-dot" style="background:#f57c00;"></div>
+            Apache TinkerPop
+          </div>
+          <div class="graph-item-desc">Open graph computing framework — Gremlin traversal standard.</div>
+        </div>
+
+      </div><!-- /graph-items -->
+    </div><!-- /graph-details -->
+
+    <!-- Vertical label strip -->
+    <div class="graph-label-strip">
+      <span>Graph Platforms</span>
+    </div>
+
+  </div>
+
+</div><!-- /outer-card -->
+
+</body>
+</html>
