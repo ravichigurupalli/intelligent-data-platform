@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layer 7 API Access Layer – Data Products Platform</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #dce3ea;
+    padding: 24px;
+    min-width: 860px;
+  }
+
+  /* ── Page header ─────────────────────────────────────────── */
+  .page-header {
+    background: linear-gradient(135deg, #0d47a1 0%, #1565c0 60%, #1976d2 100%);
+    color: #fff;
+    border-radius: 14px 14px 0 0;
+    padding: 22px 30px 18px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .page-header-left { flex: 1; }
+  .page-header-eyebrow {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #90caf9;
+    margin-bottom: 6px;
+  }
+  .page-header-title { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
+  .page-header-sub   { font-size: 12px; color: #bbdefb; font-style: italic; }
+  .page-header-badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .page-header-badge-label { font-size: 9px; color: #90caf9; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .page-header-badge-value { font-size: 28px; font-weight: 900; line-height: 1.1; }
+  .page-header-badge-sub   { font-size: 9px; color: #bbdefb; margin-top: 2px; }
+
+  /* ── Outer card ──────────────────────────────────────────── */
+  .outer-card {
+    border: 2px solid #aab5c0;
+    border-radius: 0 0 14px 14px;
+    background: #fff;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 18px 20px 22px;
+  }
+
+  /* ── Generic section wrapper ─────────────────────────────── */
+  .section { margin-bottom: 18px; }
+
+  .section-header {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-header-sub {
+    font-size: 9px;
+    font-weight: 400;
+    font-style: italic;
+    margin-left: auto;
+    opacity: 0.8;
+  }
+  .section-body {
+    border: 1px solid #dde3ea;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+    background: #fafafa;
+  }
+
+  /* ── Connector arrow ──────────────────────────────────────── */
+  .connector {
+    text-align: center;
+    color: #0f6177;
+    font-size: 18px;
+    line-height: 1;
+    padding: 2px 0;
+  }
+
+  /* ── Current Situation ───────────────────────────────────── */
+  .situation-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+  .situation-item {
+    flex: 1;
+    min-width: 130px;
+    border: 1px solid #e3e8ee;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #f0f4f8;
+    text-align: center;
+  }
+  .situation-icon { font-size: 22px; margin-bottom: 5px; }
+  .situation-name { font-size: 10.5px; font-weight: 700; color: #1a3a5c; }
+  .situation-desc { font-size: 8.5px; color: #667; margin-top: 3px; line-height: 1.4; }
+
+  /* ── Generic L7 Architecture Flow ───────────────────────── */
+  .arch-outer { display: flex; gap: 22px; align-items: flex-start; }
+
+  .arch-flow {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .arch-node {
+    border-radius: 10px;
+    padding: 12px 24px;
+    text-align: center;
+    width: 100%;
+    max-width: 360px;
+  }
+  .arch-node-title { font-size: 13px; font-weight: 700; }
+  .arch-node-sub   { font-size: 9.5px; margin-top: 3px; }
+  .arch-arrow { font-size: 20px; color: #0f6177; line-height: 1.4; }
+
+  .arch-split {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 360px;
+    justify-content: center;
+  }
+  .arch-split-node {
+    flex: 1;
+    border-radius: 8px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .arch-split-title { font-size: 10.5px; font-weight: 700; }
+  .arch-split-sub   { font-size: 8.5px; margin-top: 3px; line-height: 1.35; }
+
+  /* Gateway sidebar */
+  .gw-sidebar { width: 230px; flex-shrink: 0; }
+  .gw-sidebar-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1565c0;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #1565c0;
+  }
+  .gw-pill {
+    border-radius: 7px;
+    padding: 8px 10px;
+    margin-bottom: 7px;
+  }
+  .gw-pill-title { font-size: 10px; font-weight: 700; }
+  .gw-pill-desc  { font-size: 8.5px; color: #555; margin-top: 2px; line-height: 1.4; }
+
+  /* Code block */
+  .code-block {
+    font-size: 9.5px;
+    font-family: 'Courier New', monospace;
+    background: #263238;
+    color: #80cbc4;
+    padding: 8px 11px;
+    border-radius: 6px;
+    line-height: 1.9;
+  }
+
+  /* ── Capability cards ────────────────────────────────────── */
+  .cap-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .cap-card { border: 1px solid #dde3ea; border-radius: 10px; overflow: hidden; }
+  .cap-card-header {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cap-card-body { padding: 10px 12px; background: #fafcff; }
+  .cap-item {
+    font-size: 9px;
+    color: #334;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 5px;
+    line-height: 1.45;
+  }
+  .cap-item:last-child { margin-bottom: 0; }
+  .cap-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+
+  /* ── Specific Architecture (pipeline) ───────────────────── */
+  .pipe-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .pipe-node {
+    border-radius: 10px;
+    padding: 12px 18px;
+    text-align: center;
+    width: 100%;
+    max-width: 560px;
+  }
+  .pipe-node-title { font-size: 13px; font-weight: 700; }
+  .pipe-node-sub   { font-size: 9.5px; margin-top: 4px; line-height: 1.5; }
+  .pipe-badge {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+  }
+  .pipe-arrow { font-size: 20px; color: #0f6177; line-height: 1.5; }
+
+  .source-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 560px;
+  }
+  .source-branch {
+    flex: 1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .source-branch-title { font-size: 11px; font-weight: 700; }
+  .source-branch-arrow { font-size: 12px; color: #90a4ae; margin: 4px 0; }
+  .source-branch-dest  { font-size: 10px; font-weight: 700; }
+  .source-branch-sub   { font-size: 8.5px; margin-top: 2px; }
+
+  .consumer-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 560px;
+  }
+  .consumer-card {
+    flex: 1;
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 2px solid transparent;
+  }
+  .consumer-icon  { font-size: 24px; }
+  .consumer-title { font-size: 11px; font-weight: 700; margin-top: 5px; }
+  .consumer-sub   { font-size: 8.5px; margin-top: 3px; line-height: 1.4; }
+
+  /* L7 gateway node (prominent) */
+  .l7-node {
+    width: 100%;
+    max-width: 560px;
+    background: linear-gradient(135deg, #0d47a1, #1565c0);
+    color: #fff;
+    border-radius: 10px;
+    padding: 14px 18px;
+    text-align: center;
+    border: 2px solid #0d47a1;
+  }
+  .l7-node-title { font-size: 15px; font-weight: 700; }
+  .l7-node-sub   { font-size: 10px; color: #bbdefb; margin-top: 4px; }
+  .l7-chips {
+    display: flex;
+    gap: 7px;
+    margin-top: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .l7-chip {
+    background: #1976d2;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* ── API Endpoints panel ─────────────────────────────────── */
+  .endpoint-panel { border: 1px solid #e3e8ee; border-radius: 8px; overflow: hidden; margin-top: 16px; }
+  .endpoint-panel-header {
+    background: #263238;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .endpoint-cols { display: flex; gap: 0; background: #f8fafc; }
+  .endpoint-col { flex: 1; padding: 12px 13px; border-right: 1px solid #e3e8ee; }
+  .endpoint-col:last-child { border-right: none; }
+  .endpoint-col-label {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #889;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  /* ── Gateway tool cards ──────────────────────────────────── */
+  .gw-tools { display: flex; gap: 10px; flex-wrap: wrap; }
+  .gw-tool-card { flex: 1; min-width: 160px; border: 1px solid #dde3ea; border-radius: 8px; overflow: hidden; }
+  .gw-tool-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    padding: 7px 12px;
+    text-align: center;
+  }
+  .gw-tool-body { padding: 9px 11px; font-size: 9px; color: #445; line-height: 1.55; }
+
+  /* ── Group response box ──────────────────────────────────── */
+  .response-box {
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    border: 1.5px solid #2e7d32;
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .response-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #2e7d32;
+    margin-bottom: 9px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .response-text { font-size: 11px; color: #263238; line-height: 1.85; }
+
+  /* ── Gap callout ─────────────────────────────────────────── */
+  .gap-callout {
+    margin-top: 13px;
+    padding: 9px 14px;
+    background: #fff3e0;
+    border: 1px solid #ffb74d;
+    border-radius: 8px;
+    font-size: 10px;
+    color: #7f4a00;
+    line-height: 1.6;
+  }
+
+  /* ── Recommendation callout ─────────────────────────────── */
+  .rec-callout {
+    margin-top: 10px;
+    padding: 9px 14px;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 7px;
+    font-size: 9.5px;
+    color: #1b5e20;
+    line-height: 1.6;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE HEADER
+════════════════════════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-header-eyebrow">OSI Model — Application Layer · Data Products Platform</div>
+    <div class="page-header-title">Layer 7 API Access &amp; Consumption Layer</div>
+    <div class="page-header-sub">Enterprise Data Products — API Architecture, Governance &amp; Strategy</div>
+  </div>
+  <div class="page-header-badge">
+    <div class="page-header-badge-label">OSI Layer</div>
+    <div class="page-header-badge-value">L7</div>
+    <div class="page-header-badge-sub">Application Layer</div>
+  </div>
+</div>
+
+<div class="outer-card">
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 1 — Current Situation
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" style="background:#37474f;">
+      ⚠️ Current Situation — How Data Products Are Exposed Today
+      <span class="section-header-sub">Fragmented access channels → no unified governed interface for consumers</span>
+    </div>
+    <div class="section-body">
+      <div class="situation-grid">
+        <div class="situation-item">
+          <div class="situation-icon">📨</div>
+          <div class="situation-name">Kafka Topics</div>
+          <div class="situation-desc">Event streams — real-time data via messaging broker</div>
+        </div>
+        <div class="situation-item">
+          <div class="situation-icon">🏠</div>
+          <div class="situation-name">Lakehouse Tables</div>
+          <div class="situation-desc">IOMete / Databricks Iceberg tables — direct SQL query</div>
+        </div>
+        <div class="situation-item">
+          <div class="situation-icon">🪣</div>
+          <div class="situation-name">Object Storage</div>
+          <div class="situation-desc">S3 / ADLS — file-based direct access</div>
+        </div>
+        <div class="situation-item">
+          <div class="situation-icon">📁</div>
+          <div class="situation-name">Batch Files</div>
+          <div class="situation-desc">Scheduled extracts — NAS / SFTP transfers</div>
+        </div>
+        <div class="situation-item">
+          <div class="situation-icon">🔌</div>
+          <div class="situation-name">Internal Services</div>
+          <div class="situation-desc">Ad-hoc integrations — no standard contract or discovery</div>
+        </div>
+        <div class="situation-item">
+          <div class="situation-icon">⚡</div>
+          <div class="situation-name">SingleStore</div>
+          <div class="situation-desc">Direct HTAP queries — bypasses governance &amp; rate controls</div>
+        </div>
+      </div>
+      <div class="gap-callout">
+        <strong>Gap:</strong> Consuming teams — applications, AI agents, analytics platforms — each connect differently, bypassing governance, authentication, and observability. There is no unified, discoverable, governed interface. <strong>Layer 7 solves this by sitting above all storage technologies and exposing a single, standardised API surface.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 2 — Generic L7 Architecture
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" style="background:#1565c0;">
+      🏗️ Layer 7 Solution — API Gateway Architecture
+      <span class="section-header-sub">API-first access layer decouples consumers from underlying storage</span>
+    </div>
+    <div class="section-body">
+      <div class="arch-outer">
+
+        <!-- Flow diagram -->
+        <div class="arch-flow">
+
+          <div class="arch-node" style="background:#e3f2fd; border:2px solid #1565c0; color:#0d47a1;">
+            <div class="arch-node-title">🖥️ Consumer Applications</div>
+            <div class="arch-node-sub" style="color:#1565c0;">Web Apps &nbsp;·&nbsp; Mobile &nbsp;·&nbsp; AI Agents &nbsp;·&nbsp; Analytics Platforms &nbsp;·&nbsp; Internal Tools</div>
+          </div>
+
+          <div class="arch-arrow">▼</div>
+
+          <div class="arch-node" style="background:#1565c0; color:#fff; border:2px solid #0d47a1;">
+            <div class="arch-node-title">🔀 Layer 7 API Gateway</div>
+            <div class="arch-node-sub" style="color:#90caf9;">Apigee &nbsp;·&nbsp; Kong &nbsp;·&nbsp; Azure APIM &nbsp;·&nbsp; NGINX &nbsp;·&nbsp; F5</div>
+          </div>
+
+          <div class="arch-arrow">▼</div>
+
+          <div class="arch-node" style="background:#e8eaf6; border:2px solid #3949ab; color:#1a237e;">
+            <div class="arch-node-title">📦 Data Product APIs</div>
+            <div class="arch-node-sub" style="color:#3949ab;">REST &nbsp;·&nbsp; GraphQL &nbsp;·&nbsp; gRPC &nbsp;·&nbsp; Streaming / WebSocket APIs</div>
+          </div>
+
+          <div class="arch-arrow">▼</div>
+
+          <div class="arch-split">
+            <div class="arch-split-node" style="background:#e8f5e9; border:1px solid #2e7d32; color:#1b5e20;">
+              <div class="arch-split-title">🕸️ Graph API</div>
+              <div class="arch-split-sub" style="color:#388e3c;">Knowledge Graph Traversal</div>
+            </div>
+            <div class="arch-split-node" style="background:#e3f2fd; border:1px solid #1565c0; color:#0d47a1;">
+              <div class="arch-split-title">📊 Data APIs</div>
+              <div class="arch-split-sub" style="color:#1976d2;">Customer · Product Order · Inventory</div>
+            </div>
+            <div class="arch-split-node" style="background:#fff3e0; border:1px solid #e65100; color:#bf360c;">
+              <div class="arch-split-title">🏷️ Metadata APIs</div>
+              <div class="arch-split-sub" style="color:#e65100;">Catalog · Lineage Quality · SLA</div>
+            </div>
+          </div>
+
+          <div class="arch-arrow">▼</div>
+
+          <div class="arch-node" style="background:#37474f; color:#fff; border:2px solid #263238;">
+            <div class="arch-node-title">🗄️ Data Stores</div>
+            <div class="arch-node-sub" style="color:#b0bec5;">IOMete (Iceberg) &nbsp;·&nbsp; SingleStore &nbsp;·&nbsp; Kafka &nbsp;·&nbsp; S3 / ADLS &nbsp;·&nbsp; Knowledge Graph &nbsp;·&nbsp; PostgreSQL</div>
+          </div>
+
+        </div><!-- /arch-flow -->
+
+        <!-- Gateway responsibility sidebar -->
+        <div class="gw-sidebar">
+          <div class="gw-sidebar-title">Gateway Responsibilities</div>
+
+          <div class="gw-pill" style="background:#e3f2fd; border-left:3px solid #1565c0;">
+            <div class="gw-pill-title" style="color:#0d47a1;">🔐 Authentication &amp; Authorisation</div>
+            <div class="gw-pill-desc">Azure AD · OAuth 2.0 · JWT · RBAC per Data Product</div>
+          </div>
+          <div class="gw-pill" style="background:#e8f5e9; border-left:3px solid #2e7d32;">
+            <div class="gw-pill-title" style="color:#1b5e20;">⚡ Rate Limiting &amp; Quotas</div>
+            <div class="gw-pill-desc">1,000 req/min per consumer · Per-team spend caps · Throttling</div>
+          </div>
+          <div class="gw-pill" style="background:#fff3e0; border-left:3px solid #ef6c00;">
+            <div class="gw-pill-title" style="color:#bf360c;">🔍 API Discovery</div>
+            <div class="gw-pill-desc">Swagger / OpenAPI auto-publish · Developer Portal</div>
+          </div>
+          <div class="gw-pill" style="background:#f3e5f5; border-left:3px solid #7b1fa2;">
+            <div class="gw-pill-title" style="color:#4a148c;">📈 Observability</div>
+            <div class="gw-pill-desc">Request volume · p50/p95/p99 latency · Error rates · Adoption</div>
+          </div>
+          <div class="gw-pill" style="background:#e0f7fa; border-left:3px solid #00838f;">
+            <div class="gw-pill-title" style="color:#006064;">🔄 Traffic Management</div>
+            <div class="gw-pill-desc">Load balancing · Circuit breaking · Retry logic · Caching</div>
+          </div>
+          <div class="gw-pill" style="background:#f9fbe7; border-left:3px solid #827717;">
+            <div class="gw-pill-title" style="color:#558b2f;">📋 API Lifecycle</div>
+            <div class="gw-pill-desc">Versioning /v1/ /v2/ · Deprecation notices · SLA tracking</div>
+          </div>
+        </div><!-- /gw-sidebar -->
+
+      </div><!-- /arch-outer -->
+
+      <!-- Standardised API endpoints -->
+      <div class="endpoint-panel">
+        <div class="endpoint-panel-header">📋 Standardised Data Product API Endpoint Patterns</div>
+        <div class="endpoint-cols">
+          <div class="endpoint-col">
+            <div class="endpoint-col-label">Entity Lookup</div>
+            <div class="code-block">
+              GET /customer/{id}<br>
+              GET /product/{id}<br>
+              GET /inventory/location/{loc}
+            </div>
+          </div>
+          <div class="endpoint-col">
+            <div class="endpoint-col-label">Data Product Catalog</div>
+            <div class="code-block">
+              GET /data-products/customer<br>
+              GET /data-products/product<br>
+              GET /data-products/order<br>
+              GET /data-products/inventory
+            </div>
+          </div>
+          <div class="endpoint-col">
+            <div class="endpoint-col-label">GraphQL &amp; Metadata</div>
+            <div class="code-block">
+              POST /graphql<br>
+              GET  /lineage/{entity}<br>
+              GET  /quality/{product}<br>
+              GET  /sla/{product}
+            </div>
+          </div>
+          <div class="endpoint-col">
+            <div class="endpoint-col-label">Agentic / AI APIs</div>
+            <div class="code-block">
+              POST /agents/query<br>
+              GET  /graph/traverse/{node}<br>
+              POST /rag/retrieve<br>
+              GET  /embeddings/{entity}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 3 — Your Actual Architecture
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" style="background:#00695c;">
+      🏭 Your Data Product Architecture — Layer 7 Positioned
+      <span class="section-header-sub">Kafka → PostgreSQL → SingleStore → IOMete → L7 API Platform → Consumers</span>
+    </div>
+    <div class="section-body">
+      <div style="display:flex; gap:24px; align-items:flex-start;">
+
+        <!-- Pipeline flow -->
+        <div class="pipe-flow" style="flex:1;">
+
+          <!-- Source Systems -->
+          <div class="source-row">
+            <div class="source-branch" style="background:#455a64; border:1px solid #37474f;">
+              <div class="source-branch-title" style="color:#80cbc4;">📨 Kafka</div>
+              <div class="source-branch-sub" style="color:#b0bec5;">Event Streams</div>
+              <div class="source-branch-arrow">↓</div>
+              <div class="source-branch-dest" style="color:#4dd0e1;">PostgreSQL</div>
+              <div class="source-branch-sub" style="color:#90a4ae;">Raw Layer</div>
+            </div>
+            <div class="source-branch" style="background:#455a64; border:1px solid #37474f;">
+              <div class="source-branch-title" style="color:#80cbc4;">📁 NAS</div>
+              <div class="source-branch-sub" style="color:#b0bec5;">File-Based Sources</div>
+              <div class="source-branch-arrow">↓</div>
+              <div class="source-branch-dest" style="color:#4dd0e1;">S3 / ADLS</div>
+              <div class="source-branch-sub" style="color:#90a4ae;">Object Storage</div>
+            </div>
+          </div>
+
+          <div class="pipe-arrow">▼</div>
+
+          <!-- SingleStore -->
+          <div class="pipe-node" style="background:#0277bd; color:#fff; border:1px solid #01579b;">
+            <div class="pipe-node-title">⚡ SingleStore</div>
+            <div class="pipe-node-sub" style="color:#b3e5fc;">Source Data Product · High-performance operational queries · Sub-second HTAP · Real-time analytics</div>
+            <div class="pipe-badge" style="background:#01579b; color:#4fc3f7;">SOURCE DATA PRODUCT</div>
+          </div>
+
+          <div class="pipe-arrow">▼</div>
+
+          <!-- IOMete -->
+          <div class="pipe-node" style="background:#00695c; color:#fff; border:1px solid #004d40;">
+            <div class="pipe-node-title">🏔️ IOMete (Apache Iceberg)</div>
+            <div class="pipe-node-sub" style="color:#b2dfdb;">Curated Data Product · Kubernetes-native Lakehouse · BYOC · Open standards · ACID transactions · Time-travel</div>
+            <div class="pipe-badge" style="background:#004d40; color:#80cbc4;">CURATED DATA PRODUCT</div>
+          </div>
+
+          <div class="pipe-arrow">▼</div>
+
+          <!-- Layer 7 API Platform -->
+          <div class="l7-node">
+            <div class="l7-node-title">🔀 Layer 7 API Platform</div>
+            <div class="l7-node-sub">REST &nbsp;·&nbsp; GraphQL &nbsp;·&nbsp; Agent APIs &nbsp;·&nbsp; Streaming APIs</div>
+            <div class="l7-chips">
+              <div class="l7-chip">🔐 Auth / RBAC</div>
+              <div class="l7-chip">⚡ Rate Limiting</div>
+              <div class="l7-chip">📈 Observability</div>
+              <div class="l7-chip">🔍 Discovery</div>
+              <div class="l7-chip">🔄 Lifecycle Mgmt</div>
+            </div>
+          </div>
+
+          <div class="pipe-arrow">▼</div>
+
+          <!-- Consumers -->
+          <div class="consumer-row">
+            <div class="consumer-card" style="background:#e3f2fd; border-color:#1565c0;">
+              <div class="consumer-icon">🖥️</div>
+              <div class="consumer-title" style="color:#0d47a1;">Applications</div>
+              <div class="consumer-sub" style="color:#1976d2;">Web · Mobile<br>Enterprise Apps</div>
+            </div>
+            <div class="consumer-card" style="background:#f3e5f5; border-color:#7b1fa2;">
+              <div class="consumer-icon">🤖</div>
+              <div class="consumer-title" style="color:#4a148c;">AI Agents</div>
+              <div class="consumer-sub" style="color:#7b1fa2;">Agentic AI · LLMs<br>Graph RAG</div>
+            </div>
+            <div class="consumer-card" style="background:#e8f5e9; border-color:#2e7d32;">
+              <div class="consumer-icon">📊</div>
+              <div class="consumer-title" style="color:#1b5e20;">Analytics</div>
+              <div class="consumer-sub" style="color:#2e7d32;">BI · Self-service<br>Reporting</div>
+            </div>
+          </div>
+
+        </div><!-- /pipe-flow -->
+
+        <!-- Key design principles -->
+        <div style="width:250px; flex-shrink:0;">
+          <div style="font-size:11px; font-weight:700; color:#00695c; margin-bottom:10px; padding-bottom:5px; border-bottom:2px solid #00695c;">Key Design Principles</div>
+
+          <div style="padding:9px 11px; background:#e0f2f1; border-radius:8px; border-left:3px solid #00695c; margin-bottom:8px;">
+            <div style="font-size:10px; font-weight:700; color:#004d40;">Storage Agnosticism</div>
+            <div style="font-size:8.5px; color:#555; margin-top:3px; line-height:1.45;">Consumers access the same APIs regardless of whether data originates from Kafka/PostgreSQL, S3, SingleStore, or IOMete. The storage technology is invisible to the consumer.</div>
+          </div>
+
+          <div style="padding:9px 11px; background:#e3f2fd; border-radius:8px; border-left:3px solid #1565c0; margin-bottom:8px;">
+            <div style="font-size:10px; font-weight:700; color:#0d47a1;">Consumer Decoupling</div>
+            <div style="font-size:8.5px; color:#555; margin-top:3px; line-height:1.45;">Applications and AI agents do not need to know SingleStore from IOMete. Migrations, upgrades, or storage changes become invisible to consumers.</div>
+          </div>
+
+          <div style="padding:9px 11px; background:#f3e5f5; border-radius:8px; border-left:3px solid #7b1fa2; margin-bottom:8px;">
+            <div style="font-size:10px; font-weight:700; color:#4a148c;">Agentic AI Ready</div>
+            <div style="font-size:8.5px; color:#555; margin-top:3px; line-height:1.45;">Agent-friendly API design — structured, predictable, schema-documented responses. GraphQL for flexible queries. Knowledge Graph integration via Graph API.</div>
+          </div>
+
+          <div style="padding:9px 11px; background:#fff3e0; border-radius:8px; border-left:3px solid #e65100; margin-bottom:8px;">
+            <div style="font-size:10px; font-weight:700; color:#bf360c;">Governed at the Border</div>
+            <div style="font-size:8.5px; color:#555; margin-top:3px; line-height:1.45;">All access flows through the gateway — authentication, authorisation, rate limiting, and audit logging are enforced uniformly regardless of who is calling.</div>
+          </div>
+
+          <div style="padding:9px 11px; background:#e8f5e9; border-radius:8px; border-left:3px solid #2e7d32;">
+            <div style="font-size:10px; font-weight:700; color:#1b5e20;">Open Standards</div>
+            <div style="font-size:8.5px; color:#555; margin-top:3px; line-height:1.45;">REST, GraphQL, OpenAPI — no proprietary protocols. Integrates with any consumer tool, language, or framework.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 4 — 8 Proposed Capabilities
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" style="background:#4a148c;">
+      ✅ Proposed Layer 7 Capabilities — 8 Core Requirements
+      <span class="section-header-sub">Complete API platform feature set for enterprise Data Products</span>
+    </div>
+    <div class="section-body">
+      <div class="cap-grid">
+
+        <div class="cap-card">
+          <div class="cap-card-header" style="background:#1565c0;">🌐 API-Based Data Access</div>
+          <div class="cap-card-body">
+            <div class="cap-item"><div class="cap-dot" style="background:#1565c0;"></div>REST &amp; GraphQL endpoints for every Data Product</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#1565c0;"></div>Consistent /data-products/{name} URL pattern</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#1565c0;"></div>Storage-agnostic — same API whether data is in Kafka, S3, SingleStore, or IOMete</div>
+            <div style="font-size:8.5px; font-family:'Courier New',monospace; background:#e3f2fd; color:#0d47a1; padding:5px 8px; border-radius:5px; margin-top:5px; line-height:1.8;">
+              GET /customer/12345<br>
+              GET /product/789<br>
+              GET /inventory/location/AUS
+            </div>
+          </div>
+        </div>
+
+        <div class="cap-card">
+          <div class="cap-card-header" style="background:#b71c1c;">🔐 Security &amp; Authentication</div>
+          <div class="cap-card-body">
+            <div class="cap-item"><div class="cap-dot" style="background:#b71c1c;"></div>Azure AD authentication integration</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#b71c1c;"></div>OAuth 2.0 / JWT token validation at the gateway</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#b71c1c;"></div>Role-Based Access Control per Data Product and endpoint</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#b71c1c;"></div>Zero-Trust — never trust, always verify. Every call authenticated</div>
+          </div>
+        </div>
+
+        <div class="cap-card">
+          <div class="cap-card-header" style="background:#e65100;">⚡ Rate Limiting &amp; Traffic Governance</div>
+          <div class="cap-card-body">
+            <div class="cap-item"><div class="cap-dot" style="background:#e65100;"></div>1,000 requests/minute per consumer by default</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#e65100;"></div>Per-team and per-Data-Product quotas</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#e65100;"></div>Circuit breaking to prevent cascade failures</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#e65100;"></div>Throttling with retry-after headers for graceful degradation</div>
+          </div>
+        </div>
+
+        <div class="cap-card">
+          <div class="cap-card-header" style="background:#00695c;">🔍 API Discovery &amp; Developer Portal</div>
+          <div class="cap-card-body">
+            <div class="cap-item"><div class="cap-dot" style="background:#00695c;"></div>Swagger / OpenAPI specifications auto-published for every Data Product</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#00695c;"></div>Developer Portal — self-service API discovery, sandbox, docs</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#00695c;"></div>Metadata surfaced — owner, SLA, quality score, freshness</div>
+          </div>
+        </div>
+
+        <div class="cap-card">
+          <div class="cap-card-header" style="background:#4a148c;">📈 Observability &amp; Monitoring</div>
+          <div class="cap-card-body">
+            <div class="cap-item"><div class="cap-dot" style="background:#4a148c;"></div>Request volume and throughput dashboards</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#4a148c;"></div>Response time percentiles — p50, p95, p99</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#4a148c;"></div>Error rates and failure pattern analysis</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#4a148c;"></div>API adoption metrics — who is using which Data Product</div>
+          </div>
+        </div>
+
+        <div class="cap-card">
+          <div class="cap-card-header" style="background:#1b5e20;">📦 Data Product Standardisation</div>
+          <div class="cap-card-body">
+            <div class="cap-item"><div class="cap-dot" style="background:#1b5e20;"></div>Every Data Product follows the same /data-products/{name} pattern</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#1b5e20;"></div>Same governance standards applied regardless of storage backend</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#1b5e20;"></div>Schema contracts published via OpenAPI — breaking changes prevented</div>
+          </div>
+        </div>
+
+        <div class="cap-card">
+          <div class="cap-card-header" style="background:#0277bd;">🤖 AI &amp; Agentic Consumer Support</div>
+          <div class="cap-card-body">
+            <div class="cap-item"><div class="cap-dot" style="background:#0277bd;"></div>Agent-friendly design — structured, schema-documented, predictable responses</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#0277bd;"></div>GraphQL for flexible, self-describing AI queries</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#0277bd;"></div>Knowledge Graph &amp; Graph RAG integration via Graph API</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#0277bd;"></div>MCP and LangChain compatible API patterns for multi-agent workflows</div>
+          </div>
+        </div>
+
+        <div class="cap-card">
+          <div class="cap-card-header" style="background:#37474f;">🔄 API Lifecycle Management</div>
+          <div class="cap-card-body">
+            <div class="cap-item"><div class="cap-dot" style="background:#37474f;"></div>Versioned APIs — /v1/, /v2/ — non-breaking schema evolution</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#37474f;"></div>Deprecation notices with migration guidance and sunset dates</div>
+            <div class="cap-item"><div class="cap-dot" style="background:#37474f;"></div>SLA tracking per API endpoint — freshness, availability, latency</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 5 — Recommended Gateway Options
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" style="background:#f57f17; color:#fff;">
+      🛠️ Recommended API Gateway Options
+      <span class="section-header-sub">Evaluated against your Azure / IOMete / Kubernetes stack</span>
+    </div>
+    <div class="section-body">
+      <div class="gw-tools">
+        <div class="gw-tool-card">
+          <div class="gw-tool-header" style="background:#0277bd;">Azure APIM</div>
+          <div class="gw-tool-body">Tightest Azure AD integration · Managed service with built-in Developer Portal · Policy engine for rate limiting, transformation · Native Entra ID RBAC · Best fit for Azure-first estates with IOMete on AKS</div>
+        </div>
+        <div class="gw-tool-card">
+          <div class="gw-tool-header" style="background:#2e7d32;">Google Apigee</div>
+          <div class="gw-tool-body">Enterprise-grade · Advanced analytics and monetisation · Multi-cloud deployment · Best-in-class developer experience · Strong for organisations with GCP footprint alongside Azure</div>
+        </div>
+        <div class="gw-tool-card">
+          <div class="gw-tool-header" style="background:#37474f;">Kong Gateway</div>
+          <div class="gw-tool-body">Open-source core · Kubernetes-native — aligns with IOMete's K8s deployment model · Rich plugin ecosystem · Cloud-agnostic · Ideal if avoiding vendor lock-in at the gateway layer too</div>
+        </div>
+        <div class="gw-tool-card">
+          <div class="gw-tool-header" style="background:#6a1b9a;">AWS API Gateway</div>
+          <div class="gw-tool-body">Serverless · Native AWS IAM and Cognito integration · WebSocket and REST/GraphQL support · Best for AWS-hosted Data Products and Lambda-backed APIs</div>
+        </div>
+      </div>
+      <div class="rec-callout">
+        <strong>Recommendation:</strong> Given your Azure AD / IOMete / Kubernetes stack — <strong>Azure APIM</strong> provides the tightest identity and governance integration. <strong>Kong</strong> is the best alternative if you want Kubernetes-native deployment that mirrors IOMete's architecture philosophy. Either can coexist.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 6 — Group Response
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section" style="margin-bottom:0;">
+    <div class="section-header" style="background:#2e7d32;">
+      💬 Revised Group Response — Ready to Send to Leadership
+    </div>
+    <div class="response-box">
+      <div class="response-label">📨 Recommended message to leadership group chat</div>
+      <div class="response-text">
+        "Thanks. Bhanu and I will work together on defining a Layer 7 API capability for the Data Product platform.
+        <br><br>
+        The proposed approach is to establish a standardised API access layer on top of our existing data ecosystem, where source data flows from Kafka into PostgreSQL (raw layer) and file-based sources from NAS into S3, followed by Data Product processing in SingleStore and curation in IOMete Iceberg tables.
+        <br><br>
+        This Layer 7 capability will provide secure, governed, and discoverable REST/GraphQL APIs for consuming Data Products — enabling applications, analytics platforms, and Agentic AI solutions to access data through a consistent interface while incorporating authentication, authorisation, observability, rate limiting, and API lifecycle management.
+        <br><br>
+        This will decouple consumers from the underlying storage technologies and provide a scalable, storage-agnostic consumption model for enterprise Data Products. We will also ensure the API layer is Agentic AI-ready, supporting both application consumers and AI agent orchestration frameworks through consistent, schema-documented interfaces."
+      </div>
+    </div>
+  </div>
+
+</div><!-- /outer-card -->
+
+</body>
+</html>
